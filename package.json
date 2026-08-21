@@ -1,0 +1,38 @@
+{
+  "name": "campusplus-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CampusPlus — Campus Lab Equipment Fault Reporting System",
+  "workspaces": [
+    "backend",
+    "student-app",
+    "admin-app"
+  ],
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:student": "npm --prefix student-app run dev",
+    "dev:admin": "npm --prefix admin-app run dev",
+    "lint": "npm --prefix backend run lint && npm --prefix student-app run lint && npm --prefix admin-app run lint",
+    "lint:fix": "npm --prefix backend run lint:fix",
+    "test:backend": "npm --prefix backend test",
+    "build:student": "npm --prefix student-app run build",
+    "build:admin": "npm --prefix admin-app run build",
+    "prepare": "husky || exit 0"
+  },
+  "devDependencies": {
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.9",
+    "prettier": "^3.3.3"
+  },
+  "lint-staged": {
+    "backend/**/*.js": [
+      "prettier --write"
+    ],
+    "student-app/src/**/*.{js,jsx}": [
+      "prettier --write"
+    ],
+    "admin-app/src/**/*.{js,jsx}": [
+      "prettier --write"
+    ]
+  }
+}
