@@ -32,11 +32,11 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
             <Link to="/report">
-              <Button variant="surface" size="lg" className="px-8 shadow-float">
-                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Button variant="surface" size="lg" className="px-8 shadow-float flex items-center gap-2">
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                 </svg>
-                Report an Issue Now
+                <span>Report an Issue Now</span>
               </Button>
             </Link>
           </div>

@@ -48,7 +48,7 @@ export default function Button({
     >
       {loading ? (
         <svg
-          className="animate-spin h-4 w-4 text-current"
+          className="animate-spin h-4 w-4 text-current flex-shrink-0"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -70,7 +70,7 @@ export default function Button({
       ) : Icon ? (
         <Icon className="w-4 h-4 flex-shrink-0" />
       ) : null}
-      <span>{children}</span>
+      {children}
     </button>
   );
 }
