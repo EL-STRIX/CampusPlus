@@ -9,6 +9,10 @@ const prisma = require('../config/db');
  */
 async function submitReport(req, res, next) {
   try {
+    if (req.fileValidationError) {
+      throw new AppError(req.fileValidationError, 400, 'INVALID_FILE_TYPE');
+    }
+
     if (!req.file) {
       throw new AppError('Device photo is mandatory for fault reporting.', 400, 'VALIDATION_ERROR');
     }
@@ -68,6 +72,10 @@ async function submitReport(req, res, next) {
  */
 async function uploadPhoto(req, res, next) {
   try {
+    if (req.fileValidationError) {
+      throw new AppError(req.fileValidationError, 400, 'INVALID_FILE_TYPE');
+    }
+
     if (!req.file) {
       throw new AppError('No photo file uploaded.', 400, 'VALIDATION_ERROR');
     }

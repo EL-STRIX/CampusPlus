@@ -1,7 +1,6 @@
 const multer = require('multer');
 const env = require('../config/env');
 const { getUploadDir, ALLOWED_MIME_TYPES, generateFilename } = require('../services/upload.service');
-const { AppError } = require('./error.middleware');
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -12,18 +11,12 @@ const storage = multer.diskStorage({
   },
 });
 
-const fileFilter = (_req, file, cb) => {
+const fileFilter = (req, file, cb) => {
   if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(
-      new AppError(
-        'Invalid file type. Only JPG, PNG, and WebP images are allowed.',
-        400,
-        'INVALID_FILE_TYPE'
-      ),
-      false
-    );
+    req.fileValidationError = 'Invalid file type. Only JPG, PNG, and WebP images are allowed.';
+    cb(null, false);
   }
 };
 
