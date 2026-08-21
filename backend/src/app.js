@@ -7,6 +7,10 @@ const prisma = require('./config/db');
 const { httpLogger } = require('./utils/logger');
 const { errorHandler, notFoundHandler } = require('./middleware/error.middleware');
 
+// Route imports
+const reportsRoutes = require('./routes/reports.routes');
+const referenceRoutes = require('./routes/reference.routes');
+
 const app = express();
 
 // Trust proxy for rate limiting behind reverse proxies (e.g. Render/Vercel)
@@ -53,7 +57,6 @@ app.use('/uploads', express.static(uploadAbsolutePath));
 // Health check endpoint per TRD.md §5.13
 app.get('/health', async (_req, res, next) => {
   try {
-    // Verify database connectivity
     await prisma.$queryRaw`SELECT 1`;
     res.status(200).json({
       status: 'ok',
@@ -76,6 +79,10 @@ app.get('/api/v1', (_req, res) => {
     error: null,
   });
 });
+
+// Mount Public API Routes
+app.use('/api/v1/reports', reportsRoutes);
+app.use('/api/v1', referenceRoutes);
 
 // 404 Handler for unmatched routes
 app.use(notFoundHandler);
