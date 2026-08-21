@@ -1,0 +1,121 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ReportStatus {
+  open
+  in_progress
+  resolved
+  rejected
+}
+
+model Report {
+  id                   String       @id @default(uuid())
+  deviceType           String       @map("device_type")
+  deviceNumber         String?      @map("device_number")
+  deviceNumberVisible  Boolean      @map("device_number_visible")
+  buildingId           String       @map("building_id")
+  roomId               String       @map("room_id")
+  photoUrl             String       @map("photo_url")
+  reportCount          Int          @default(1) @map("report_count")
+  possibleDuplicate    Boolean      @default(false) @map("possible_duplicate")
+  suggestedMatchIds    String[]     @map("suggested_match_ids")
+  mergedInto           String?      @map("merged_into")
+  status               ReportStatus @default(open)
+  rejectionReason      String?      @map("rejection_reason")
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+  resolvedAt           DateTime?    @map("resolved_at")
+
+  building      Building              @relation(fields: [buildingId], references: [id])
+  room          Room                  @relation(fields: [roomId], references: [id])
+  reporters     ReportReporter[]
+  statusHistory ReportStatusHistory[]
+
+  @@index([roomId, deviceNumber])
+  @@index([status])
+  @@index([reportCount])
+  @@map("reports")
+}
+
+model ReportReporter {
+  id           String   @id @default(uuid())
+  reportId     String   @map("report_id")
+  studentCode  String   @map("student_code")
+  department   String
+  stream       String
+  yearSemester String?  @map("year_semester")
+  notes        String?
+  reportedAt   DateTime @default(now()) @map("reported_at")
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+  @@map("report_reporters")
+}
+
+model ReportStatusHistory {
+  id        String       @id @default(uuid())
+  reportId  String       @map("report_id")
+  status    ReportStatus
+  changedAt DateTime     @default(now()) @map("changed_at")
+  changedBy String       @map("changed_by")
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  admin  Admin  @relation(fields: [changedBy], references: [id])
+
+  @@index([reportId])
+  @@map("report_status_history")
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  statusChanges ReportStatusHistory[]
+
+  @@map("admins")
+}
+
+model Department {
+  id      String   @id @default(uuid())
+  name    String
+  streams Stream[]
+
+  @@map("departments")
+}
+
+model Stream {
+  id           String     @id @default(uuid())
+  name         String
+  departmentId String     @map("department_id")
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  @@map("streams")
+}
+
+model Building {
+  id      String   @id @default(uuid())
+  name    String
+  rooms   Room[]
+  reports Report[]
+
+  @@map("buildings")
+}
+
+model Room {
+  id         String   @id @default(uuid())
+  name       String
+  buildingId String   @map("building_id")
+  building   Building @relation(fields: [buildingId], references: [id])
+  reports    Report[]
+
+  @@map("rooms")
+}
