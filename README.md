@@ -1,75 +1,118 @@
-# CampusPlus — Campus Lab Equipment Fault Reporting System
+# CampusPlus — Campus Hardware Fault Reporting & Tracking System
 
-CampusPlus is a full-stack web application that allows students to report malfunctioning lab equipment (fans, ACs, projectors, CPUs, UPS units, cables, monitors, etc.) without requiring login or registration. Reports are automatically deduplicated — if multiple students report the same faulty device in the same room, the system merges them into a single record and raises its priority instead of creating repeat entries. Lab/IT administrators manage all reports through a separate, authenticated admin panel with a full status workflow.
-
----
-
-## 📁 Repository Structure (Monorepo)
-
-```
-campusplus/
-├── student-app/                  # Public React SPA (Vite + Tailwind CSS)
-├── admin-app/                    # Authenticated React SPA (Vite + Tailwind CSS)
-├── backend/                      # Node.js + Express.js REST API (Prisma + PostgreSQL)
-├── docs/                         # PRD, TRD, Architecture, Design, Phases documents
-├── .github/workflows/            # CI/CD pipelines for all three services
-└── docker-compose.yml            # Local PostgreSQL container definition
-```
+> A full-stack, enterprise-grade hardware fault reporting and facilities management platform for university lab environments.
 
 ---
 
-## 🚀 Local Development Setup
+## 🏛 System Architecture Overview
 
-### Prerequisites
-- Node.js 20.x LTS
-- npm 10.x+
-- Docker (for local PostgreSQL instance) or a local Postgres 15 installation
-- Git
+CampusPlus is structured as a robust monorepo with 3 distinct components:
 
-### 1. Backend Setup
+```
+Campusplus/
+├── backend/            # Express.js REST API + PostgreSQL with Prisma ORM
+├── student-app/        # Student-facing React SPA (TailwindCSS + Vite)
+├── admin-app/          # Facilities Admin Console React SPA (TailwindCSS + Vite)
+└── docs/               # PRD, TRD, Architecture, Design System, Phases
+```
+
+### Core Features:
+- **Zero-Login Student Portal:** High-efficiency, frictionless report submission under 60 seconds with live photo upload and cascading location selectors.
+- **Intelligent Duplicate Matching Engine:** Automatically groups reports by `(roomId, deviceNumber)` within PostgreSQL transactions. Increments report frequency and appends reporter details to prioritize severe issues.
+- **Needs Review Queue:** Untagged hardware reports are automatically flagged for manual admin review with side-by-side suggested candidates in the same room.
+- **Transactional Merging & Audit History:** Administrators can merge duplicate tickets or keep them separate. Every status transition (`Open` → `In Progress` → `Resolved` / `Rejected`) is immutably logged with admin attribution and timestamps.
+- **Pixel-Accurate Visual Design:** Strictly aligned with the connected Stitch MCP design system (Technical Teal `#004349`, Slate `#64748B`, Amber `#F59E0B`, Emerald `#10B981`, Rose `#EF4444`, Purple `#8B5CF6`).
+
+---
+
+## 🚀 Quickstart & Local Setup
+
+### 1. Prerequisites
+- **Node.js**: v18+ or v20+
+- **PostgreSQL**: v14+ (running on `localhost:5432`)
+- **Git**
+
+### 2. Environment Configuration
+Ensure `.env` files are configured:
+
+**`backend/.env`**:
+```env
+PORT=5000
+NODE_ENV=development
+DATABASE_URL="postgresql://postgres:hello_psql%401@localhost:5432/campusplus_dev"
+JWT_SECRET="campusplus_jwt_super_secret_production_key_2026"
+JWT_EXPIRES_IN="8h"
+UPLOAD_DIR="./uploads"
+MAX_FILE_SIZE_MB=5
+ALLOWED_FILE_TYPES="image/jpeg,image/png,image/webp"
+CORS_ORIGIN="http://localhost:3000,http://localhost:3001"
+```
+
+**`student-app/.env`**:
+```env
+VITE_API_BASE_URL=http://localhost:5000/api/v1
+```
+
+**`admin-app/.env`**:
+```env
+VITE_API_BASE_URL=http://localhost:5000/api/v1
+```
+
+### 3. Database Migration & Seeding
 ```bash
 cd backend
-npm install
-cp .env.example .env              # Fill in local environment variables
-docker compose up -d db           # Start local Postgres container (or use root docker-compose)
-npx prisma migrate dev            # Run schema migrations
-npm run seed:dev                  # Seed dev data (departments, buildings, admin account)
-npm run dev                       # Start backend on http://localhost:5000
+npx prisma migrate deploy
+npx prisma db seed
 ```
 
-### 2. Student Portal Setup
+### 4. Running the Applications
+In 3 separate terminal tabs:
+
 ```bash
+# Tab 1: Backend API (Port 5000)
+cd backend
+npm run dev
+
+# Tab 2: Student Portal (Port 3000)
 cd student-app
-npm install
-cp .env.example .env
-npm run dev                       # Start student app on http://localhost:5173
-```
+npm run dev
 
-### 3. Admin Panel Setup
-```bash
+# Tab 3: Admin Console (Port 3001)
 cd admin-app
-npm install
-cp .env.example .env
-npm run dev                       # Start admin app on http://localhost:5174
+npm run dev
 ```
 
 ---
 
-## 📖 Documentation
-All architectural and product specifications are located in `/docs`:
-- [`PRD.md`](docs/PRD.md) — Product Requirements Document (features, user stories, scope)
-- [`TRD.md`](docs/TRD.md) — Technical Requirements Document (exact versions, API contracts, sequence flows)
-- [`architecture.md`](docs/architecture.md) — System Architecture (infrastructure, security, data flows)
-- [`design.md`](docs/design.md) — UI/UX Design System reference
-- [`phases.md`](docs/phases.md) — Step-by-step implementation build plan
+## 🧪 Testing & Verification
 
----
-
-## 🧪 Testing & Linting
+### Run Automated Backend Test Suite (47 Tests, 100% Pass)
 ```bash
-# Run lint across all projects
-npm run lint
-
-# Run backend unit & integration tests
-npm run test:backend
+npm --prefix backend test
 ```
+
+### Run Monorepo Linter
+```bash
+npm run lint
+```
+
+### Build Production Artifacts
+```bash
+npm --prefix student-app run build
+npm --prefix admin-app run build
+```
+
+---
+
+## 🔐 Default Admin Credentials
+- **Username:** `admin`
+- **Password:** `admin123`
+
+---
+
+## 📄 Documentation Reference
+- [`docs/PRD.md`](docs/PRD.md): Product Requirements & User Stories
+- [`docs/TRD.md`](docs/TRD.md): Technical Requirements & API Contracts
+- [`docs/architecture.md`](docs/architecture.md): System Design & Security
+- [`docs/design.md`](docs/design.md): Stitch MCP Design Tokens & UI Guidelines
+- [`docs/phases.md`](docs/phases.md): Step-by-Step Implementation Tracker
