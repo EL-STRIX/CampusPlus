@@ -23,7 +23,7 @@ export default function Footer() {
           </span>
         </div>
 
-        <div className="flex flex-wrap gap-6 text-sm font-sans">
+        <div className="flex flex-wrap items-center gap-6 text-sm font-sans">
           <Link to="/" className="text-on-surface-variant hover:text-primary transition-colors">
             Home
           </Link>
@@ -31,20 +31,18 @@ export default function Footer() {
             Report Issue
           </Link>
           <span className="text-outline/50">•</span>
-          <a
-            href="#privacy"
-            onClick={(e) => e.preventDefault()}
+          <Link
+            to="/privacy"
             className="text-on-surface-variant hover:text-primary transition-colors"
           >
-            Privacy
-          </a>
-          <a
-            href="#terms"
-            onClick={(e) => e.preventDefault()}
+            Privacy Policy
+          </Link>
+          <Link
+            to="/terms"
             className="text-on-surface-variant hover:text-primary transition-colors"
           >
-            Terms
-          </a>
+            Terms of Service
+          </Link>
         </div>
       </div>
     </footer>

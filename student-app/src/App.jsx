@@ -4,6 +4,8 @@ import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import ReportIssuePage from './pages/ReportIssuePage';
 import ConfirmationPage from './pages/ConfirmationPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsPage from './pages/TermsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -16,6 +18,8 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/report" element={<ReportIssuePage />} />
             <Route path="/confirmation" element={<ConfirmationPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
