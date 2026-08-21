@@ -1,59 +1,86 @@
 const express = require('express');
-const cors = require('cors');
 const helmet = require('helmet');
+const cors = require('cors');
+const path = require('path');
+const env = require('./config/env');
+const prisma = require('./config/db');
+const { httpLogger } = require('./utils/logger');
+const { errorHandler, notFoundHandler } = require('./middleware/error.middleware');
 
 const app = express();
 
-// Security headers
-app.use(helmet());
+// Trust proxy for rate limiting behind reverse proxies (e.g. Render/Vercel)
+app.set('trust proxy', 1);
 
-// CORS configuration
-const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:5174').split(',');
+// 1. Helmet — security headers (TRD.md §10 Step 1)
 app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
 
-// Body parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// 2. CORS — origin allow-list check (TRD.md §10 Step 2)
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    const isAllowed = env.CORS_ALLOWED_ORIGINS.includes(origin);
+    const isDev = (process.env.NODE_ENV || env.NODE_ENV) === 'development';
+    if (isAllowed || isDev) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+app.use(cors(corsOptions));
+
+// 3. Pino HTTP Logger — structured request logging (TRD.md §10 Step 3)
+app.use(httpLogger);
+
+// 4. Body & File parsing (TRD.md §10 Step 4)
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// Static file serving for uploaded device photos (TRD.md §8.1)
+const uploadAbsolutePath = path.isAbsolute(env.UPLOAD_DIR)
+  ? env.UPLOAD_DIR
+  : path.join(__dirname, '..', env.UPLOAD_DIR);
+app.use('/uploads', express.static(uploadAbsolutePath));
 
 // Health check endpoint per TRD.md §5.13
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    db: 'connected',
-    uptime: Math.floor(process.uptime()),
-  });
+app.get('/health', async (_req, res, next) => {
+  try {
+    // Verify database connectivity
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({
+      status: 'ok',
+      db: 'connected',
+      uptime: Math.floor(process.uptime()),
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
-// Hello CampusPlus placeholder
-app.get('/api/v1', (req, res) => {
+// API Root / Welcome
+app.get('/api/v1', (_req, res) => {
   res.status(200).json({
     success: true,
-    data: { message: 'Hello CampusPlus API' },
+    data: {
+      message: 'CampusPlus API v1 running',
+      version: '1.0.0',
+    },
     error: null,
   });
 });
 
-// Global error handler placeholder
-app.use((err, req, res, _next) => {
-  res.status(err.status || 500).json({
-    success: false,
-    data: null,
-    error: {
-      code: err.code || 'INTERNAL_SERVER_ERROR',
-      message: err.message || 'An unexpected error occurred',
-    },
-  });
-});
+// 404 Handler for unmatched routes
+app.use(notFoundHandler);
+
+// 10. Centralized Error Handler (TRD.md §10 Step 10)
+app.use(errorHandler);
 
 module.exports = app;
