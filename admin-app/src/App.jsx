@@ -1,19 +1,44 @@
-function App() {
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminLayout from './components/AdminLayout';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import AllReportsPage from './pages/AllReportsPage';
+import ReportDetailPage from './pages/ReportDetailPage';
+import NeedsReviewPage from './pages/NeedsReviewPage';
+import ProfilePage from './pages/ProfilePage';
+import NotFoundPage from './pages/NotFoundPage';
+
+export default function App() {
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-md bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-        <h1 className="text-3xl font-extrabold text-slate-800 mb-3 tracking-tight">
-          CampusPlus Admin
-        </h1>
-        <p className="text-slate-600 mb-6 font-medium">
-          Admin Portal — Fault Management Dashboard
-        </p>
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-          Phase 0 Initialized
-        </span>
-      </div>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public Login Route */}
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Protected Admin Routes */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<DashboardPage />} />
+            <Route path="reports" element={<AllReportsPage />} />
+            <Route path="reports/:id" element={<ReportDetailPage />} />
+            <Route path="needs-review" element={<NeedsReviewPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+
+          {/* Catch-all fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
-
-export default App;
