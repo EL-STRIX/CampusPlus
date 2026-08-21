@@ -1,19 +1,26 @@
-function App() {
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import HomePage from './pages/HomePage';
+import ReportIssuePage from './pages/ReportIssuePage';
+import ConfirmationPage from './pages/ConfirmationPage';
+import NotFoundPage from './pages/NotFoundPage';
+
+export default function App() {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-md bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-        <h1 className="text-3xl font-extrabold text-teal-900 mb-3 tracking-tight">
-          CampusPlus
-        </h1>
-        <p className="text-slate-600 mb-6 font-medium">
-          Student Portal — Lab Fault Reporting System
-        </p>
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200">
-          Phase 0 Initialized
-        </span>
+    <BrowserRouter>
+      <div className="min-h-screen flex flex-col bg-background text-on-background">
+        <Header />
+        <main className="flex-grow flex flex-col">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/report" element={<ReportIssuePage />} />
+            <Route path="/confirmation" element={<ConfirmationPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </main>
+        <Footer />
       </div>
-    </div>
+    </BrowserRouter>
   );
 }
-
-export default App;
