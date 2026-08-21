@@ -10,6 +10,8 @@ const { errorHandler, notFoundHandler } = require('./middleware/error.middleware
 // Route imports
 const reportsRoutes = require('./routes/reports.routes');
 const referenceRoutes = require('./routes/reference.routes');
+const authRoutes = require('./routes/auth.routes');
+const adminRoutes = require('./routes/admin.routes');
 
 const app = express();
 
@@ -83,6 +85,10 @@ app.get('/api/v1', (_req, res) => {
 // Mount Public API Routes
 app.use('/api/v1/reports', reportsRoutes);
 app.use('/api/v1', referenceRoutes);
+
+// Mount Admin & Auth Routes
+app.use('/api/v1/admin', authRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // 404 Handler for unmatched routes
 app.use(notFoundHandler);
