@@ -90,47 +90,55 @@ export default function ProfilePage() {
             title="Account Overview"
             subtitle="Logged in administrator details"
             className="h-full flex flex-col"
-            bodyClassName="flex-1 flex flex-col justify-between"
+            bodyClassName="flex-1 flex flex-col justify-between p-6"
           >
-            <div>
-              <div className="flex items-center gap-4 pb-5 border-b border-outline-variant/20">
-                <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center font-headline font-bold text-xl flex-shrink-0">
-                  {user?.username?.charAt(0).toUpperCase() || 'A'}
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-headline font-bold text-base text-on-surface capitalize truncate">
-                    {user?.username || 'admin'}
-                  </h3>
-                  <p className="text-xs font-sans text-on-surface-variant mt-0.5">
-                    Facilities Administrator
-                  </p>
-                </div>
+            {/* Header Identity */}
+            <div className="flex items-center gap-4 pb-6 border-b border-outline-variant/20">
+              <div className="w-16 h-16 rounded-full bg-primary/10 text-primary border-2 border-primary/20 flex items-center justify-center font-headline font-bold text-2xl flex-shrink-0 shadow-sm">
+                {user?.username?.charAt(0).toUpperCase() || 'A'}
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-headline font-bold text-lg text-on-surface capitalize truncate">
+                  {user?.username || 'admin'}
+                </h3>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-headline font-medium bg-primary/10 text-primary border border-primary/20 mt-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Facilities Administrator
+                </span>
+              </div>
+            </div>
+
+            {/* Evenly Spread Details Rows */}
+            <div className="flex-1 flex flex-col justify-around py-6 divide-y divide-outline-variant/20 text-xs font-sans">
+              <div className="py-4 flex justify-between items-center">
+                <span className="text-on-surface-variant font-medium">Username</span>
+                <span className="font-mono font-semibold text-on-surface text-sm">@{user?.username || 'admin'}</span>
               </div>
 
-              <div className="pt-4 divide-y divide-outline-variant/20 text-xs font-sans">
-                <div className="py-3.5 flex justify-between items-center">
-                  <span className="text-on-surface-variant font-medium">Username</span>
-                  <span className="font-mono font-semibold text-on-surface">@{user?.username || 'admin'}</span>
-                </div>
-
-                <div className="py-3.5 flex justify-between items-center">
-                  <span className="text-on-surface-variant font-medium">Department</span>
-                  <span className="font-medium text-on-surface">Campus Facilities & Labs</span>
-                </div>
-
-                <div className="py-3.5 flex justify-between items-center">
-                  <span className="text-on-surface-variant font-medium">Access Scope</span>
-                  <span className="font-medium text-on-surface">All Lab Equipment Reports</span>
-                </div>
-
-                <div className="py-3.5 flex justify-between items-center">
-                  <span className="text-on-surface-variant font-medium">Status</span>
-                  <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                    Active Session
-                  </span>
-                </div>
+              <div className="py-4 flex justify-between items-center">
+                <span className="text-on-surface-variant font-medium">Department</span>
+                <span className="font-medium text-on-surface text-right">Campus Facilities & Labs</span>
               </div>
+
+              <div className="py-4 flex justify-between items-center">
+                <span className="text-on-surface-variant font-medium">Access Scope</span>
+                <span className="font-medium text-on-surface text-right">All Lab Equipment Reports</span>
+              </div>
+
+              <div className="py-4 flex justify-between items-center">
+                <span className="text-on-surface-variant font-medium">Account Status</span>
+                <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                  Active Session
+                </span>
+              </div>
+            </div>
+
+            {/* Grounding Footer */}
+            <div className="pt-4 border-t border-outline-variant/20 text-center">
+              <span className="text-[11px] font-sans text-on-surface-variant/80">
+                Authenticated with full administrative management permissions.
+              </span>
             </div>
           </Card>
         </div>
@@ -141,7 +149,7 @@ export default function ProfilePage() {
             title="Change Password"
             subtitle="Enforce account security with regular password updates"
             className="h-full flex flex-col"
-            bodyClassName="flex-1 flex flex-col justify-between"
+            bodyClassName="flex-1 flex flex-col justify-between p-6"
           >
             {successMsg && (
               <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-status-resolved/30 text-status-resolved text-xs font-medium flex items-center justify-between animate-fadeIn">
