@@ -33,17 +33,17 @@ const createReportSchema = z
       .min(1, 'Stream is required'),
     labType: z.string().trim().max(100).optional().nullable(),
     yearSemester: z.string().trim().max(30).optional().nullable(),
-    buildingName: z.string().trim().min(1, 'Building is required').optional().nullable(),
-    building: z.string().trim().min(1, 'Building is required').optional().nullable(),
+    buildingName: z.string().trim().optional().nullable(),
+    building: z.string().trim().optional().nullable(),
     buildingId: z.string().trim().optional().nullable(),
-    roomName: z.string().trim().min(1, 'Room is required').optional().nullable(),
-    room: z.string().trim().min(1, 'Room is required').optional().nullable(),
+    roomName: z.string().trim().optional().nullable(),
+    room: z.string().trim().optional().nullable(),
     roomId: z.string().trim().optional().nullable(),
-    deviceType: z.enum(DEVICE_TYPES, {
-      errorMap: () => ({
-        message: `Device type must be one of: ${DEVICE_TYPES.join(', ')}`,
-      }),
-    }),
+    deviceType: z
+      .string({ required_error: 'Device type is required' })
+      .trim()
+      .min(1, 'Device type is required')
+      .max(100, 'Device type name is too long'),
     deviceNumber: z.string().trim().max(50).optional().nullable(),
     deviceNumberVisible: z
       .union([z.boolean(), z.string()])
@@ -61,11 +61,8 @@ const createReportSchema = z
   })
   .refine(
     (data) => {
-      return Boolean(
-        (data.buildingName && data.buildingName.trim().length > 0) ||
-        (data.building && data.building.trim().length > 0) ||
-        (data.buildingId && data.buildingId.trim().length > 0)
-      );
+      const bName = data.buildingName || data.building || data.buildingId;
+      return Boolean(bName && bName.trim().length > 0);
     },
     {
       message: 'Building name or number is required',
@@ -74,11 +71,8 @@ const createReportSchema = z
   )
   .refine(
     (data) => {
-      return Boolean(
-        (data.roomName && data.roomName.trim().length > 0) ||
-        (data.room && data.room.trim().length > 0) ||
-        (data.roomId && data.roomId.trim().length > 0)
-      );
+      const rName = data.roomName || data.room || data.roomId;
+      return Boolean(rName && rName.trim().length > 0);
     },
     {
       message: 'Room number or identifier is required',

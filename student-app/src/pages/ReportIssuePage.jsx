@@ -1,24 +1,228 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDepartments, submitFaultReport } from '../api/reports';
 import Button from '../components/Button';
 import { Input, Select, Textarea } from '../components/FormField';
 
-const DEVICE_TYPES = [
-  { value: 'cpu', label: 'Computer Workstation / CPU' },
-  { value: 'monitor', label: 'Display Monitor' },
-  { value: 'keyboard', label: 'Computer Keyboard' },
-  { value: 'mouse', label: 'Optical Mouse' },
-  { value: 'projector', label: 'Ceiling / Desktop Projector' },
-  { value: 'ac', label: 'Air Conditioner / HVAC' },
-  { value: 'fan', label: 'Ceiling / Wall Fan' },
-  { value: 'light', label: 'Tubelight / LED Lighting' },
-  { value: 'ups', label: 'Uninterruptible Power Supply (UPS)' },
-  { value: 'ethernet_cable', label: 'LAN / Ethernet Cable' },
-  { value: 'hdmi_cable', label: 'HDMI / Display Cable' },
-  { value: 'other_cable', label: 'Power / Other Cable' },
-  { value: 'other', label: 'Other Hardware / Facility' },
+// Base facility & electrical hardware common across all campus labs
+const COMMON_LAB_FACILITIES = [
+  { value: 'Ceiling / Wall Air Conditioner (AC)', label: 'Ceiling / Wall Air Conditioner (AC)' },
+  { value: 'Ceiling / Wall Fan', label: 'Ceiling / Wall Fan' },
+  { value: 'Tubelight / LED Panel Lighting', label: 'Tubelight / LED Panel Lighting' },
+  { value: 'Ceiling Projector / Smart Screen', label: 'Ceiling Projector / Smart Interactive Screen' },
+  { value: 'Central UPS / Power Backup Inverter', label: 'Central UPS / Power Backup Inverter' },
+  { value: 'Power Extension Strip / Spike Buster / Switchboard', label: 'Power Strip / Spike Buster / Electrical Switchboard' },
+  { value: 'LAN / Ethernet Wall Port & Network Switch', label: 'LAN Wall Port / Network Switch' },
+  { value: 'Exhaust Fan / Lab Ventilation Unit', label: 'Exhaust Fan / Lab Ventilation Unit' },
 ];
+
+// Comprehensive mapping of technical, electronic & electrical devices by Laboratory Type
+const LAB_DEVICES_MAP = {
+  'Computer / Software Systems Lab': [
+    { value: 'CPU / Computer Workstation', label: 'CPU / Computer Workstation' },
+    { value: 'Display Monitor', label: 'Display Monitor' },
+    { value: 'Computer Keyboard', label: 'Computer Keyboard' },
+    { value: 'Optical Mouse', label: 'Optical Mouse' },
+    { value: 'LAN / Ethernet Cable', label: 'LAN / Ethernet Cable' },
+    { value: 'HDMI / DisplayPort Cable', label: 'HDMI / DisplayPort Cable' },
+    { value: 'Network Switch / Patch Panel', label: 'Network Switch / Patch Panel' },
+    { value: 'Server Rack Mount / Dedicated Server', label: 'Server Rack Mount / Dedicated Server' },
+    { value: 'Lab WiFi Access Point Router', label: 'Lab WiFi Access Point Router' },
+    { value: 'Headphone / Audio Port', label: 'Headphone / Audio Port' },
+  ],
+  'Hardware, Microprocessor & Embedded Systems Lab': [
+    { value: '8085 / 8086 Microprocessor Trainer Kit', label: '8085 / 8086 Microprocessor Trainer Kit' },
+    { value: 'Microcontroller (8051/ARM/PIC) Trainer Kit', label: 'Microcontroller (8051 / ARM / PIC) Trainer Kit' },
+    { value: 'FPGA / CPLD Development Board', label: 'FPGA / CPLD Development Board' },
+    { value: 'Digital Storage Oscilloscope (DSO)', label: 'Digital Storage Oscilloscope (DSO)' },
+    { value: 'Logic Analyzer / Protocol Analyzer', label: 'Logic Analyzer / Protocol Analyzer' },
+    { value: 'IC Programmer / EEPROM Flasher', label: 'IC Programmer / EEPROM Flasher' },
+    { value: 'Digital IC Tester / Trainer Board', label: 'Digital IC Tester / Trainer Board' },
+    { value: 'Regulated DC Power Supply (RPS)', label: 'Regulated DC Power Supply (RPS)' },
+    { value: 'Soldering Station & De-soldering Tool', label: 'Soldering Station & De-soldering Tool' },
+    { value: 'Digital Multimeter (DMM)', label: 'Digital Multimeter (DMM)' },
+    { value: 'Interfacing Card (ADC/DAC/Stepper/Traffic)', label: 'Interfacing Card (ADC / DAC / Stepper / Traffic)' },
+  ],
+  'Electronics, Circuits & VLSI Lab': [
+    { value: 'Cathode Ray / Digital Oscilloscope (CRO/DSO)', label: 'Cathode Ray / Digital Oscilloscope (CRO / DSO)' },
+    { value: 'Function / Signal Generator (AFG/RF)', label: 'Function / Signal Generator (AFG / RF)' },
+    { value: 'Dual Regulated DC Power Supply (RPS)', label: 'Dual Regulated DC Power Supply (RPS)' },
+    { value: 'Digital Multimeter (DMM)', label: 'Digital Multimeter (DMM)' },
+    { value: 'Analog & Digital Breadboard Trainer Kit', label: 'Analog & Digital Breadboard Trainer Kit' },
+    { value: 'LCR Meter / Component Analyzer', label: 'LCR Meter / Component Analyzer' },
+    { value: 'VLSI CAD Workstation & Hardware Emulator', label: 'VLSI CAD Workstation & Hardware Emulator' },
+    { value: 'Spectrum Analyzer / Network Analyzer', label: 'Spectrum Analyzer / Network Analyzer' },
+    { value: 'Soldering Iron / SMD Rework Station', label: 'Soldering Iron / SMD Rework Station' },
+    { value: 'Frequency Counter & Timer Unit', label: 'Frequency Counter & Timer Unit' },
+  ],
+  'Electrical Machines & Power Electronics Lab': [
+    { value: 'AC / DC Motor-Generator (MG) Set', label: 'AC / DC Motor-Generator (MG) Set' },
+    { value: '1-Phase / 3-Phase Auto-Transformer (Variac)', label: '1-Phase / 3-Phase Auto-Transformer (Variac)' },
+    { value: 'Rheostat / Variable Resistance Load Bank', label: 'Rheostat / Variable Resistance Load Bank' },
+    { value: 'Resistive / Inductive / Capacitive Load Bank', label: 'Resistive / Inductive / Capacitive Load Bank' },
+    { value: 'Digital / Analog Wattmeter / Ammeter / Voltmeter', label: 'Wattmeter / Ammeter / Voltmeter' },
+    { value: 'Power Electronics (SCR/MOSFET/IGBT) Trainer', label: 'Power Electronics (SCR/MOSFET/IGBT) Trainer' },
+    { value: 'Inverter / Converter / Chopper Rig', label: 'Inverter / Converter / Chopper Rig' },
+    { value: 'Earth Resistance Tester / Megger Insulation Meter', label: 'Earth Resistance Tester / Megger Insulation Meter' },
+    { value: 'Power Factor Meter / 3-Phase Energy Meter', label: 'Power Factor Meter / 3-Phase Energy Meter' },
+    { value: 'Synchronous Alternator / 3-Phase Induction Motor', label: 'Synchronous Alternator / 3-Phase Induction Motor' },
+    { value: 'Relay & Circuit Breaker (MCB/MCCB) Test Panel', label: 'Relay & Circuit Breaker Test Panel' },
+    { value: 'High Voltage Testing Transformer Setup', label: 'High Voltage Testing Transformer Setup' },
+  ],
+  'Electric Vehicle (EV) & Battery Research Lab': [
+    { value: 'EV Motor (BLDC/PMSM) & Controller Test Bench', label: 'EV Motor (BLDC/PMSM) & Controller Test Bench' },
+    { value: 'Battery Management System (BMS) Test Rig', label: 'Battery Management System (BMS) Test Rig' },
+    { value: 'Li-Ion Battery Pack Testing & Cycler Station', label: 'Li-Ion Battery Pack Testing & Cycler Station' },
+    { value: 'EV AC/DC Fast Charging Station Setup', label: 'EV AC/DC Fast Charging Station Setup' },
+    { value: 'Dyno / Dynamometer Load Test Rig', label: 'Dyno / Dynamometer Load Test Rig' },
+    { value: 'Regenerative Braking Simulator Rig', label: 'Regenerative Braking Simulator Rig' },
+    { value: 'Programmable High-Power DC Electronic Load', label: 'Programmable High-Power DC Electronic Load' },
+  ],
+  'Robotics, Automation & Mechatronics Lab': [
+    { value: 'Robotic Arm / Articulated Manipulator', label: 'Robotic Arm / Articulated Manipulator' },
+    { value: 'PLC (Programmable Logic Controller) Trainer Kit', label: 'PLC (Programmable Logic Controller) Trainer Kit' },
+    { value: 'SCADA Workstation & HMI Touch Panel', label: 'SCADA Workstation & HMI Touch Panel' },
+    { value: 'Pneumatic / Electro-Pneumatic Trainer Kit', label: 'Pneumatic / Electro-Pneumatic Trainer Kit' },
+    { value: 'Hydraulic Valve & Cylinder Actuator Rig', label: 'Hydraulic Valve & Cylinder Actuator Rig' },
+    { value: 'Servo / Stepper Motor Drive Module', label: 'Servo / Stepper Motor Drive Module' },
+    { value: '3D Printer / Rapid Prototyping Machine', label: '3D Printer / Rapid Prototyping Machine' },
+    { value: 'CNC Milling / Lathe Machine Interface', label: 'CNC Milling / Lathe Machine Interface' },
+    { value: 'Proximity / Optical / Ultrasonic Sensor Rig', label: 'Proximity / Optical / Ultrasonic Sensor Rig' },
+  ],
+  'AI, Machine Learning & Data Analytics Lab': [
+    { value: 'GPU Deep Learning Workstation (NVIDIA/CUDA)', label: 'GPU Deep Learning Workstation (NVIDIA / CUDA)' },
+    { value: 'High-Resolution Visual Display Monitor', label: 'High-Resolution Visual Display Monitor' },
+    { value: 'AI Edge Device (NVIDIA Jetson / Raspberry Pi)', label: 'AI Edge Device (NVIDIA Jetson / Raspberry Pi)' },
+    { value: 'Webcam / Computer Vision Depth Camera', label: 'Computer Vision Depth Camera / LiDAR Sensor' },
+    { value: 'Mechanical Keyboard & Optical Mouse', label: 'Mechanical Keyboard & Optical Mouse' },
+    { value: 'High-Speed Gigabit LAN / Fibre Port', label: 'High-Speed Gigabit LAN / Fibre Port' },
+  ],
+  'Cloud Computing & Cyber Forensics Lab': [
+    { value: 'Virtualization & Cloud Server Node', label: 'Virtualization & Cloud Server Node' },
+    { value: 'Cyber Forensics Hardware Write Blocker', label: 'Cyber Forensics Hardware Write Blocker' },
+    { value: 'High-Performance Dual-Monitor PC Workstation', label: 'High-Performance Dual-Monitor PC Workstation' },
+    { value: 'Hardware Security Module (HSM) / Firewall Appliance', label: 'Hardware Security Module / Firewall Appliance' },
+    { value: 'Network Sniffer / Packet Capture Station', label: 'Network Sniffer / Packet Capture Station' },
+  ],
+  'Networking & Server Infrastructure Lab': [
+    { value: 'Managed Router (Cisco / Juniper / MikroTik)', label: 'Managed Router (Cisco / Juniper / MikroTik)' },
+    { value: 'Managed Gigabit L2/L3 Network Switch', label: 'Managed Gigabit L2/L3 Network Switch' },
+    { value: 'Patch Panel & RJ45 Termination Rack', label: 'Patch Panel & RJ45 Termination Rack' },
+    { value: 'Optical Fiber Splicer & Optical Power Meter', label: 'Optical Fiber Splicer & Optical Power Meter' },
+    { value: 'Network Cable Tester / Tone & Probe Kit', label: 'Network Cable Tester / Tone & Probe Kit' },
+    { value: 'Server Rack Mount / Blade Server Unit', label: 'Server Rack Mount / Blade Server Unit' },
+  ],
+  'Instrumentation & Process Control / Sensor Lab': [
+    { value: 'Process Control Simulator (Level/Flow/Temp/Pressure)', label: 'Process Control Simulator (Level / Flow / Temp / Pressure)' },
+    { value: 'DCS (Distributed Control System) Workstation', label: 'DCS (Distributed Control System) Workstation' },
+    { value: 'Temperature Sensor / RTD / Thermocouple Calibrator', label: 'Temperature Sensor / RTD / Thermocouple Calibrator' },
+    { value: 'Strain Gauge / Load Cell & LVDT Kit', label: 'Strain Gauge / Load Cell & LVDT Kit' },
+    { value: 'Pressure Transmitter / Dead Weight Tester', label: 'Pressure Transmitter / Dead Weight Tester' },
+    { value: 'PID Controller Trainer Setup', label: 'PID Controller Trainer Setup' },
+    { value: 'Digital Multimeter / Multi-Function Signal Calibrator', label: 'Digital Multimeter / Multi-Function Signal Calibrator' },
+  ],
+  'CAD / CAM & Simulation Lab': [
+    { value: 'High-Performance 3D CAD Workstation', label: 'High-Performance 3D CAD Workstation' },
+    { value: 'Digitizer / Drawing Graphics Display Tablet', label: 'Digitizer / Drawing Graphics Display Tablet' },
+    { value: '3D Scanner & Laser Measurement Tool', label: '3D Scanner & Laser Measurement Tool' },
+    { value: 'Large Format Blueprint Plotter / Color Printer', label: 'Large Format Blueprint Plotter / Color Printer' },
+    { value: 'CNC Simulation Controller Console', label: 'CNC Simulation Controller Console' },
+  ],
+  'Mechanical Workshop & Thermal / Fluid Lab': [
+    { value: 'Computerized Engine Test Rig (IC Engine)', label: 'Computerized Engine Test Rig (IC Engine)' },
+    { value: 'Refrigeration & AC (RAC) Test Rig', label: 'Refrigeration & AC (RAC) Test Rig' },
+    { value: 'Pelton / Francis Turbine Test Setup', label: 'Pelton / Francis Turbine Test Setup' },
+    { value: 'Centrifugal Pump Test Rig', label: 'Centrifugal Pump Test Rig' },
+    { value: 'Bomb / Junker Calorimeter Apparatus', label: 'Bomb / Junker Calorimeter Apparatus' },
+    { value: 'Heat Exchanger (Parallel/Counter Flow) Apparatus', label: 'Heat Exchanger (Parallel / Counter Flow) Apparatus' },
+    { value: 'Digital Tachometer & Stroboscope', label: 'Digital Tachometer & Stroboscope' },
+  ],
+  'Civil, Geotechnical & Concrete Testing Lab': [
+    { value: 'Universal Testing Machine (UTM) Digital Console', label: 'Universal Testing Machine (UTM) Digital Console' },
+    { value: 'Compression Testing Machine (CTM)', label: 'Compression Testing Machine (CTM)' },
+    { value: 'Digital Sieve Shaker & Vibrator', label: 'Digital Sieve Shaker & Vibrator' },
+    { value: 'Electronic Precision Analytical Balance', label: 'Electronic Precision Analytical Balance' },
+    { value: 'Soil Direct Shear / Triaxial Apparatus', label: 'Soil Direct Shear / Triaxial Apparatus' },
+    { value: 'Concrete Rebound Hammer & Ultrasonic Pulse Tester', label: 'Concrete Rebound Hammer & Ultrasonic Pulse Tester' },
+  ],
+  'Surveying & Remote Sensing / GIS Lab': [
+    { value: 'Electronic Total Station (Digital Theodolite)', label: 'Electronic Total Station (Digital Theodolite)' },
+    { value: 'Auto Level / Digital Level Device', label: 'Auto Level / Digital Level Device' },
+    { value: 'Handheld & Differential GPS (DGPS) Receiver', label: 'Handheld & Differential GPS (DGPS) Receiver' },
+    { value: 'Laser Distance Meter & Rangefinder', label: 'Laser Distance Meter & Rangefinder' },
+    { value: 'GIS Workstation & Spatial Plotter', label: 'GIS Workstation & Spatial Plotter' },
+  ],
+  'Biomedical Engineering & Medical Diagnostics Lab': [
+    { value: 'ECG / EKG Patient Simulator & Monitor', label: 'ECG / EKG Patient Simulator & Monitor' },
+    { value: 'Digital Pulse Oximeter & Multi-Para Patient Monitor', label: 'Digital Pulse Oximeter & Multi-Para Patient Monitor' },
+    { value: 'EEG / EMG Biopotential Signal Acquisition Kit', label: 'EEG / EMG Biopotential Signal Acquisition Kit' },
+    { value: 'Defibrillator & Pacemaker Analyzer', label: 'Defibrillator & Pacemaker Analyzer' },
+    { value: 'Ultrasound Scanner & Doppler Probe Rig', label: 'Ultrasound Scanner & Doppler Probe Rig' },
+    { value: 'Medical Spectrophotometer & Colorimeter', label: 'Medical Spectrophotometer & Colorimeter' },
+    { value: 'Spirometer & Respiratory Gas Analyzer', label: 'Spirometer & Respiratory Gas Analyzer' },
+  ],
+  'Pharmaceutical Sciences & Formulation Lab': [
+    { value: 'UV-Visible Spectrophotometer', label: 'UV-Visible Spectrophotometer' },
+    { value: 'Digital pH / Ion Meter', label: 'Digital pH / Ion Meter' },
+    { value: 'HPLC / Chromatography System Console', label: 'HPLC / Chromatography System Console' },
+    { value: 'Tablet Dissolution & Disintegration Tester', label: 'Tablet Dissolution & Disintegration Tester' },
+    { value: 'Digital Analytical Electronic Balance', label: 'Digital Analytical Electronic Balance' },
+    { value: 'Hot Plate Magnetic Stirrer', label: 'Hot Plate Magnetic Stirrer' },
+    { value: 'Rotary Vacuum Evaporator', label: 'Rotary Vacuum Evaporator' },
+    { value: 'Laminar Air Flow / Biosafety Cabinet', label: 'Laminar Air Flow / Biosafety Cabinet' },
+    { value: 'Digital Melting Point Apparatus', label: 'Digital Melting Point Apparatus' },
+  ],
+  'Biotechnology, Genetics & Bioinformatics Lab': [
+    { value: 'PCR (Thermal Cycler) Machine', label: 'PCR (Thermal Cycler) Machine' },
+    { value: 'Gel Electrophoresis Power Supply Unit', label: 'Gel Electrophoresis Power Supply Unit' },
+    { value: 'UV Gel Transilluminator & Gel Doc System', label: 'UV Gel Transilluminator & Gel Doc System' },
+    { value: 'High-Speed Refrigerated Micro-Centrifuge', label: 'High-Speed Refrigerated Micro-Centrifuge' },
+    { value: 'Compound Trinocular Research Microscope', label: 'Compound Trinocular Research Microscope' },
+    { value: 'Autoclave / Bio-Fermenter Unit', label: 'Autoclave / Bio-Fermenter Unit' },
+    { value: 'BOD / Orbital Shaking Incubator', label: 'BOD / Orbital Shaking Incubator' },
+  ],
+  'Chemical Analysis & Instrumental Chemistry Lab': [
+    { value: 'Digital Flame Photometer', label: 'Digital Flame Photometer' },
+    { value: 'Conductivity Meter & Digital TDS Meter', label: 'Conductivity Meter & Digital TDS Meter' },
+    { value: 'Digital Potentiometer & Polarimeter', label: 'Digital Potentiometer & Polarimeter' },
+    { value: 'Muffle Furnace & Hot Air Laboratory Oven', label: 'Muffle Furnace & Hot Air Laboratory Oven' },
+    { value: 'Spectrocolorimeter & Turbidity Meter', label: 'Spectrocolorimeter & Turbidity Meter' },
+    { value: 'Ultrasonic Bath Sonicator', label: 'Ultrasonic Bath Sonicator' },
+  ],
+  'Applied Physics, Optics & Laser Lab': [
+    { value: 'He-Ne / Diode Laser Source & Optical Rail', label: 'He-Ne / Diode Laser Source & Optical Rail' },
+    { value: 'Michelson Interferometer Optical Bench', label: 'Michelson Interferometer Optical Bench' },
+    { value: 'Hall Effect & Four-Probe Resistivity Setup', label: 'Hall Effect & Four-Probe Resistivity Setup' },
+    { value: 'Spectrometer with Sodium / Mercury Arc Lamp', label: 'Spectrometer with Sodium / Mercury Arc Lamp' },
+    { value: 'Solar Cell Characteristic Trainer Kit', label: 'Solar Cell Characteristic Trainer Kit' },
+    { value: 'Planck Constant / Photoelectric Effect Apparatus', label: 'Planck Constant / Photoelectric Effect Apparatus' },
+  ],
+  'Multimedia, VFX & Sound Recording Studio Lab': [
+    { value: 'DSLR / 4K Cinema Camera & Camcorder', label: 'DSLR / 4K Cinema Camera & Camcorder' },
+    { value: 'Studio Condenser Microphone & Preamp', label: 'Studio Condenser Microphone & Preamp' },
+    { value: 'Audio Mixing Console & USB Audio Interface', label: 'Audio Mixing Console & USB Audio Interface' },
+    { value: 'Studio Reference Monitor Speakers', label: 'Studio Reference Monitor Speakers' },
+    { value: 'Wacom / Graphics Drawing Display Tablet', label: 'Wacom / Graphics Drawing Display Tablet' },
+    { value: 'VR Headset (Meta Quest / HTC Vive)', label: 'VR Headset (Meta Quest / HTC Vive)' },
+    { value: 'Chroma Key Green Screen Studio Lighting', label: 'Chroma Key Green Screen Studio Lighting' },
+    { value: 'MIDI Keyboard & Music Synthesizer', label: 'MIDI Keyboard & Music Synthesizer' },
+  ],
+  'Language & Digital Communication Lab': [
+    { value: 'Student Workstation with Noise-Cancelling Headset', label: 'Student Workstation with Noise-Cancelling Headset' },
+    { value: 'Language Lab Master Console / Teacher PC', label: 'Language Lab Master Console / Teacher PC' },
+    { value: 'Audio Distribution Hub / Switcher', label: 'Audio Distribution Hub / Switcher' },
+    { value: 'Multimedia Speakers & Soundbar', label: 'Multimedia Speakers & Soundbar' },
+  ],
+  'Central Innovation & Project Prototyping Lab': [
+    { value: '3D Printer / FDM Filament Extruder', label: '3D Printer / FDM Filament Extruder' },
+    { value: 'Laser Cutting & Engraving Machine', label: 'Laser Cutting & Engraving Machine' },
+    { value: 'PCB Milling & Prototyping Machine', label: 'PCB Milling & Prototyping Machine' },
+    { value: 'Digital Storage Oscilloscope & DMM', label: 'Digital Storage Oscilloscope & DMM' },
+    { value: 'DC Programmable Electronic Load', label: 'DC Programmable Electronic Load' },
+    { value: 'Smart Soldering & Desoldering Workstation', label: 'Smart Soldering & Desoldering Workstation' },
+    { value: 'Drill Machine & Dremel Rotary Tool Kit', label: 'Drill Machine & Dremel Rotary Tool Kit' },
+  ],
+};
 
 const YEAR_SEMESTER_OPTIONS = [
   { value: '1st Year / Sem 1', label: '1st Year — Semester 1' },
@@ -78,6 +282,7 @@ export default function ReportIssuePage() {
   const [buildingName, setBuildingName] = useState('');
   const [roomName, setRoomName] = useState('');
   const [deviceType, setDeviceType] = useState('');
+  const [customDeviceType, setCustomDeviceType] = useState('');
   const [deviceNumber, setDeviceNumber] = useState('');
   const [numberNotVisible, setNumberNotVisible] = useState(false);
   const [additionalNotes, setAdditionalNotes] = useState('');
@@ -115,6 +320,34 @@ export default function ReportIssuePage() {
         { value: 'OTHER_STREAM', label: 'Other Specialization (Specify Manually)' },
       ]
     : [];
+
+  // Compute dynamic equipment & device list based on selected laboratory type
+  const availableDevices = useMemo(() => {
+    const specificList =
+      selectedLabType && LAB_DEVICES_MAP[selectedLabType]
+        ? LAB_DEVICES_MAP[selectedLabType]
+        : [
+            { value: 'CPU / Computer Workstation', label: 'CPU / Computer Workstation' },
+            { value: 'Display Monitor', label: 'Display Monitor' },
+            { value: 'Computer Keyboard', label: 'Computer Keyboard' },
+            { value: 'Optical Mouse', label: 'Optical Mouse' },
+            { value: 'Digital Storage Oscilloscope (DSO)', label: 'Digital Storage Oscilloscope (DSO)' },
+            { value: 'Function / Signal Generator', label: 'Function / Signal Generator' },
+            { value: 'Regulated DC Power Supply (RPS)', label: 'Regulated DC Power Supply (RPS)' },
+            { value: 'Digital Multimeter (DMM)', label: 'Digital Multimeter (DMM)' },
+            { value: 'Microprocessor / Microcontroller Trainer Kit', label: 'Microprocessor / Microcontroller Trainer Kit' },
+            { value: 'Soldering & De-soldering Workstation', label: 'Soldering & De-soldering Workstation' },
+            { value: 'Auto-Transformer (Variac) / Motor Set', label: 'Auto-Transformer (Variac) / Motor Set' },
+            { value: '3D Printer / Prototyping Machine', label: '3D Printer / Prototyping Machine' },
+            { value: 'Analytical Electronic Balance / Spectrophotometer', label: 'Analytical Electronic Balance / Spectrophotometer' },
+          ];
+
+    return [
+      ...specificList,
+      ...COMMON_LAB_FACILITIES,
+      { value: 'OTHER_DEVICE', label: 'Other Equipment / Device (Specify Manually)' },
+    ];
+  }, [selectedLabType]);
 
   // Photo selection handler
   const handlePhotoSelect = (file) => {
@@ -199,8 +432,11 @@ export default function ReportIssuePage() {
       newErrors.roomName = 'Room number or lab identifier is required.';
     }
     if (!deviceType) {
-      newErrors.deviceType = 'Please select the device type.';
+      newErrors.deviceType = 'Please select the equipment / device type.';
+    } else if (deviceType === 'OTHER_DEVICE' && !customDeviceType.trim()) {
+      newErrors.customDeviceType = 'Please specify the equipment / device name.';
     }
+
     if (!numberNotVisible && !deviceNumber.trim()) {
       newErrors.deviceNumber =
         'Device / asset tag number is required, or check "Number not visible".';
@@ -233,6 +469,8 @@ export default function ReportIssuePage() {
         selectedLabType === 'OTHER_LAB'
           ? customLabType.trim()
           : selectedLabType || null;
+      const finalDeviceType =
+        deviceType === 'OTHER_DEVICE' ? customDeviceType.trim() : deviceType;
 
       const formData = new FormData();
       formData.append('photo', photoFile);
@@ -243,7 +481,7 @@ export default function ReportIssuePage() {
       if (yearSemester) formData.append('yearSemester', yearSemester);
       formData.append('buildingName', buildingName.trim());
       formData.append('roomName', roomName.trim());
-      formData.append('deviceType', deviceType);
+      formData.append('deviceType', finalDeviceType);
       formData.append('deviceNumberVisible', (!numberNotVisible).toString());
       if (!numberNotVisible && deviceNumber.trim()) {
         formData.append('deviceNumber', deviceNumber.trim());
@@ -621,21 +859,44 @@ export default function ReportIssuePage() {
 
             <hr className="border-outline-variant/30" />
 
-            {/* Section 4: Device Details */}
+            {/* Section 4: Device & Equipment Details */}
             <div>
-              <h2 className="text-base font-headline font-bold text-on-surface mb-4">Device Details</h2>
+              <h2 className="text-base font-headline font-bold text-on-surface mb-4">Equipment & Device Details</h2>
               <div className="flex flex-col gap-4">
                 <Select
-                  label="Device Type"
+                  label="Equipment / Device Type"
                   id="deviceType"
                   name="deviceType"
-                  placeholder="Select Device Type"
-                  options={DEVICE_TYPES}
+                  placeholder={
+                    selectedLabType
+                      ? `Select Equipment for ${selectedLabType}`
+                      : 'Select Equipment / Device Type'
+                  }
+                  options={availableDevices}
                   value={deviceType}
-                  onChange={(e) => setDeviceType(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDeviceType(val);
+                    if (val !== 'OTHER_DEVICE') {
+                      setCustomDeviceType('');
+                    }
+                  }}
                   error={errors.deviceType}
                   required
                 />
+
+                {deviceType === 'OTHER_DEVICE' && (
+                  <Input
+                    label="Specify Equipment / Device Name"
+                    id="customDeviceType"
+                    name="customDeviceType"
+                    placeholder="e.g. Spectrum Analyzer, Fiber Optic Splicer, Rotary Evaporator"
+                    value={customDeviceType}
+                    onChange={(e) => setCustomDeviceType(e.target.value)}
+                    error={errors.customDeviceType}
+                    required
+                  />
+                )}
 
                 <div className="flex flex-col gap-2">
                   <Input
