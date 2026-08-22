@@ -81,105 +81,130 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* 4 Summary Stat Cards */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Open Card */}
+      {/* 5 Summary Stat Cards */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {/* 1. Total Open Card */}
         <div
           onClick={() => navigate('/reports?status=open')}
-          className="bg-surface-container-lowest rounded-xl p-6 border-t-4 border-status-open border-x border-b border-outline-variant/20 shadow-card hover:-translate-y-1 hover:shadow-float transition-all duration-200 cursor-pointer"
+          className="bg-surface-container-lowest rounded-2xl p-5 border-t-4 border-status-open border-x border-b border-outline-variant/30 shadow-card hover:-translate-y-1 hover:shadow-float transition-all duration-200 cursor-pointer group"
         >
           <div className="flex justify-between items-start">
             <div>
               <span className="font-eyebrow text-eyebrow text-on-surface-variant uppercase tracking-wider block">
                 Total Open
               </span>
-              <span className="text-3xl lg:text-4xl font-headline font-extrabold text-primary mt-2 block">
+              <span className="text-3xl font-headline font-extrabold text-primary mt-1.5 block">
                 {loading ? '...' : summary.open}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-slate-100 text-status-open flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 text-status-open flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
-          <span className="text-xs text-on-surface-variant mt-4 block">
-            Awaiting maintenance assignment
+          <span className="text-xs text-on-surface-variant mt-3 block">
+            Awaiting maintenance
           </span>
         </div>
 
-        {/* In Progress Card */}
+        {/* 2. In Progress Card */}
         <div
           onClick={() => navigate('/reports?status=in_progress')}
-          className="bg-surface-container-lowest rounded-xl p-6 border-t-4 border-status-in-progress border-x border-b border-outline-variant/20 shadow-card hover:-translate-y-1 hover:shadow-float transition-all duration-200 cursor-pointer"
+          className="bg-surface-container-lowest rounded-2xl p-5 border-t-4 border-status-in-progress border-x border-b border-outline-variant/30 shadow-card hover:-translate-y-1 hover:shadow-float transition-all duration-200 cursor-pointer group"
         >
           <div className="flex justify-between items-start">
             <div>
               <span className="font-eyebrow text-eyebrow text-on-surface-variant uppercase tracking-wider block">
                 In Progress
               </span>
-              <span className="text-3xl lg:text-4xl font-headline font-extrabold text-primary mt-2 block">
+              <span className="text-3xl font-headline font-extrabold text-primary mt-1.5 block">
                 {loading ? '...' : summary.inProgress}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-status-in-progress flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-status-in-progress flex items-center justify-center group-hover:bg-amber-100 transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
-          <span className="text-xs text-on-surface-variant mt-4 block">
-            Currently undergoing repair
+          <span className="text-xs text-on-surface-variant mt-3 block">
+            Currently repairing
           </span>
         </div>
 
-        {/* Resolved Card */}
+        {/* 3. Resolved Card */}
         <div
           onClick={() => navigate('/reports?status=resolved')}
-          className="bg-surface-container-lowest rounded-xl p-6 border-t-4 border-status-resolved border-x border-b border-outline-variant/20 shadow-card hover:-translate-y-1 hover:shadow-float transition-all duration-200 cursor-pointer"
+          className="bg-surface-container-lowest rounded-2xl p-5 border-t-4 border-status-resolved border-x border-b border-outline-variant/30 shadow-card hover:-translate-y-1 hover:shadow-float transition-all duration-200 cursor-pointer group"
         >
           <div className="flex justify-between items-start">
             <div>
               <span className="font-eyebrow text-eyebrow text-on-surface-variant uppercase tracking-wider block">
                 Resolved
               </span>
-              <span className="text-3xl lg:text-4xl font-headline font-extrabold text-primary mt-2 block">
+              <span className="text-3xl font-headline font-extrabold text-primary mt-1.5 block">
                 {loading ? '...' : summary.resolved}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-status-resolved flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-status-resolved flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
-          <span className="text-xs text-on-surface-variant mt-4 block">
+          <span className="text-xs text-on-surface-variant mt-3 block">
             Repairs completed
           </span>
         </div>
 
-        {/* Needs Review Card */}
+        {/* 4. Rejected Card */}
+        <div
+          onClick={() => navigate('/reports?status=rejected')}
+          className="bg-surface-container-lowest rounded-2xl p-5 border-t-4 border-status-rejected border-x border-b border-outline-variant/30 shadow-card hover:-translate-y-1 hover:shadow-float transition-all duration-200 cursor-pointer group"
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <span className="font-eyebrow text-eyebrow text-on-surface-variant uppercase tracking-wider block">
+                Rejected
+              </span>
+              <span className="text-3xl font-headline font-extrabold text-primary mt-1.5 block">
+                {loading ? '...' : summary.rejected}
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-rose-50 text-status-rejected flex items-center justify-center group-hover:bg-rose-100 transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <span className="text-xs text-on-surface-variant mt-3 block">
+            Dismissed tickets
+          </span>
+        </div>
+
+        {/* 5. Needs Review Card */}
         <div
           onClick={() => navigate('/needs-review')}
-          className="bg-surface-container-lowest rounded-xl p-6 border-t-4 border-status-needs-review border-x border-b border-outline-variant/20 shadow-card hover:-translate-y-1 hover:shadow-float transition-all duration-200 cursor-pointer relative overflow-hidden"
+          className="bg-surface-container-lowest rounded-2xl p-5 border-t-4 border-status-needs-review border-x border-b border-outline-variant/30 shadow-card hover:-translate-y-1 hover:shadow-float transition-all duration-200 cursor-pointer group relative overflow-hidden"
         >
           <div className="flex justify-between items-start">
             <div>
               <span className="font-eyebrow text-eyebrow text-on-surface-variant uppercase tracking-wider block">
                 Needs Review
               </span>
-              <span className="text-3xl lg:text-4xl font-headline font-extrabold text-primary mt-2 block">
+              <span className="text-3xl font-headline font-extrabold text-primary mt-1.5 block">
                 {loading ? '...' : summary.needsReview}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-status-needs-review flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-status-needs-review flex items-center justify-center group-hover:bg-purple-100 transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
           </div>
-          <span className="text-xs text-status-needs-review font-medium mt-4 block">
-            Flagged duplicate review queue
+          <span className="text-xs text-status-needs-review font-medium mt-3 block">
+            Flagged duplicate queue
           </span>
         </div>
       </section>
