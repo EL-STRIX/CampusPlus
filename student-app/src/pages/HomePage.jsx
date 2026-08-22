@@ -8,17 +8,16 @@ export default function HomePage() {
       {/* Hero Section with Visual Gradient & Tech Teal Overlay */}
       <section className="relative w-full min-h-[560px] md:min-h-[620px] flex items-center justify-center overflow-hidden bg-primary">
         <div
-          className="absolute inset-0 z-0 bg-cover bg-center opacity-30 mix-blend-luminosity"
+          className="absolute inset-0 z-0 bg-cover bg-center opacity-25 mix-blend-luminosity"
           style={{
             backgroundImage:
-              "url('https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1920&q=80')",
+              "url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1920&q=80')",
           }}
         ></div>
         <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/85 to-primary/60 z-0"></div>
 
         <div className="relative z-10 max-w-container-max mx-auto px-gutter text-center flex flex-col items-center py-16">
           <span className="text-xs font-headline font-bold uppercase tracking-wider text-primary-fixed bg-white/10 px-4 py-1.5 rounded-full inline-flex items-center gap-2 mb-6 backdrop-blur-md border border-white/10 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-status-resolved animate-pulse"></span>
             Campus Facilities & Lab Maintenance
           </span>
 
@@ -88,8 +87,8 @@ export default function HomePage() {
         <div className="max-w-container-max mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="rounded-2xl overflow-hidden shadow-card border border-outline-variant/30 h-[360px] relative">
             <img
-              src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80"
-              alt="University Computer Laboratory"
+              src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80"
+              alt="Indian University Computer Laboratory and Tech Center"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-primary/10"></div>
