@@ -137,17 +137,17 @@ export default function NeedsReviewPage() {
           {flaggedReports.map((report) => (
             <div
               key={report.id}
-              className="bg-surface-container-lowest rounded-2xl border-2 border-status-needs-review/30 p-6 md:p-8 shadow-card space-y-6"
+              className="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-6 shadow-card space-y-5"
             >
               {/* Flagged Item Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-outline-variant/20">
                 <div className="flex items-center gap-3">
-                  <span className="w-3 h-3 rounded-full bg-status-needs-review animate-pulse"></span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-status-needs-review animate-pulse"></span>
                   <span className="font-headline font-bold text-base text-on-surface">
                     Flagged Fault: <span className="capitalize">{report.deviceType.replace('_', ' ')}</span>
                   </span>
                   <span className="text-xs font-mono text-outline bg-surface-container px-2 py-0.5 rounded">
-                    Tag: N/A (Missing)
+                    Tag: Missing / Illegible
                   </span>
                 </div>
                 <span className="text-xs font-sans text-on-surface-variant">
@@ -155,124 +155,145 @@ export default function NeedsReviewPage() {
                 </span>
               </div>
 
-              {/* Side by Side Comparison Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                {/* Flagged Report Card (Left) */}
-                <div className="lg:col-span-5 bg-surface-container-low p-5 rounded-xl border border-outline-variant/30 flex flex-col gap-3">
-                  <span className="text-[11px] font-headline font-bold text-status-needs-review uppercase tracking-wider">
-                    Newly Submitted Report (Pending Review)
-                  </span>
-                  <div
-                    onClick={() => setPreviewPhoto(getFullImageUrl(report.photoUrl))}
-                    className="w-full h-44 rounded-lg bg-surface-container overflow-hidden border border-outline-variant/30 cursor-zoom-in relative group"
-                  >
-                    <img
-                      src={getFullImageUrl(report.photoUrl)}
-                      alt="Flagged evidence"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    />
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-headline font-bold">
-                      Click to Zoom
+              {/* Side-by-Side 50/50 Comparison Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                {/* Left: Flagged / Incoming Unmatched Report */}
+                <div className="bg-surface-container-low p-5 rounded-xl border border-outline-variant/30 flex flex-col justify-between h-full">
+                  <div>
+                    <div className="flex items-center justify-between pb-3 mb-3 border-b border-outline-variant/20">
+                      <span className="text-[11px] font-headline font-bold text-status-needs-review uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-status-needs-review"></span>
+                        Incoming Unmatched Report
+                      </span>
+                      <span className="text-[11px] font-mono text-outline bg-surface-container-lowest px-2 py-0.5 rounded border border-outline-variant/30">
+                        Pending Review
+                      </span>
                     </div>
+
+                    <div className="flex gap-4 items-start mb-4">
+                      <div
+                        onClick={() => setPreviewPhoto(getFullImageUrl(report.photoUrl))}
+                        className="w-28 h-24 rounded-lg bg-surface-container overflow-hidden border border-outline-variant/30 cursor-zoom-in relative group flex-shrink-0"
+                      >
+                        <img
+                          src={getFullImageUrl(report.photoUrl)}
+                          alt="Flagged evidence"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-headline font-bold">
+                          Zoom
+                        </div>
+                      </div>
+
+                      <div className="min-w-0 text-xs font-sans space-y-1">
+                        <span className="font-headline font-bold text-sm text-on-surface block capitalize truncate">
+                          {report.deviceType.replace('_', ' ')}
+                        </span>
+                        <p className="text-on-surface-variant truncate">
+                          <strong>Reporter:</strong> {report.reporters?.[0]?.studentCode} ({report.reporters?.[0]?.department})
+                        </p>
+                        {report.labType && (
+                          <p className="text-on-surface-variant truncate">
+                            <strong>Lab:</strong> {report.labType}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {report.reporters?.[0]?.notes && (
+                      <div className="p-3 rounded-lg bg-surface-container-lowest border border-outline-variant/20 text-xs font-sans text-on-surface italic">
+                        &quot;{report.reporters[0].notes}&quot;
+                      </div>
+                    )}
                   </div>
 
-                  {report.reporters && report.reporters[0] && (
-                    <div className="text-xs font-sans text-on-surface-variant space-y-1 pt-2 border-t border-outline-variant/20">
-                      <p>
-                        <strong>Reporter:</strong> Student {report.reporters[0].studentCode} ({report.reporters[0].department})
-                      </p>
-                      {report.labType && (
-                        <p>
-                          <strong>Lab:</strong> {report.labType}
-                        </p>
-                      )}
-                      {report.reporters[0].notes && (
-                        <p className="italic bg-surface-container-lowest p-2.5 rounded border border-outline-variant/20 text-on-surface">
-                          &quot;{report.reporters[0].notes}&quot;
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="pt-2 flex justify-end">
+                  <div className="pt-4 mt-4 border-t border-outline-variant/20 flex justify-end">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleKeepSeparate(report.id)}
                       disabled={processingAction}
                     >
-                      Keep as Separate Issue
+                      Keep as Separate Ticket
                     </Button>
                   </div>
                 </div>
 
-                {/* Candidate Matches Column (Right) */}
-                <div className="lg:col-span-7 flex flex-col gap-4">
-                  <span className="text-[11px] font-headline font-bold text-on-surface uppercase tracking-wider">
-                    Suggested Candidate Matches in Room {report.roomName} ({report.suggestedMatches?.length || 0})
-                  </span>
+                {/* Right: Suggested Candidate Matches */}
+                <div className="bg-surface-container-low p-5 rounded-xl border border-outline-variant/30 flex flex-col justify-between h-full">
+                  <div>
+                    <div className="flex items-center justify-between pb-3 mb-3 border-b border-outline-variant/20">
+                      <span className="text-[11px] font-headline font-bold text-on-surface uppercase tracking-wider flex items-center gap-1.5">
+                        <span>🎯</span> Candidate Match in Same Room ({report.suggestedMatches?.length || 0})
+                      </span>
+                      <span className="text-[11px] font-sans text-on-surface-variant">
+                        Room: <strong>{report.roomName}</strong>
+                      </span>
+                    </div>
 
-                  {report.suggestedMatches && report.suggestedMatches.length > 0 ? (
-                    <div className="space-y-3">
-                      {report.suggestedMatches.map((candidate) => (
-                        <div
-                          key={candidate.id}
-                          className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 hover:border-primary/40 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div
-                              onClick={() => setPreviewPhoto(getFullImageUrl(candidate.photoUrl))}
-                              className="w-16 h-16 rounded-lg bg-surface-container overflow-hidden border border-outline-variant/30 cursor-zoom-in flex-shrink-0"
-                            >
-                              <img
-                                src={getFullImageUrl(candidate.photoUrl)}
-                                alt="Candidate evidence"
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="min-w-0 text-xs font-sans">
-                              <span className="font-headline font-bold text-sm text-on-surface block capitalize">
-                                {candidate.deviceType.replace('_', ' ')}
-                              </span>
-                              <span className="text-on-surface-variant block">
-                                Asset Tag: <strong>{candidate.deviceNumber || 'N/A'}</strong>
-                              </span>
-                              <div className="flex items-center gap-2 mt-1">
-                                <Badge status={candidate.status} />
-                                <span className="text-[11px] text-outline">
-                                  {candidate.reportCount} existing reports
-                                </span>
+                    {report.suggestedMatches && report.suggestedMatches.length > 0 ? (
+                      <div className="space-y-3">
+                        {report.suggestedMatches.map((candidate) => (
+                          <div
+                            key={candidate.id}
+                            className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 hover:border-primary/40 shadow-sm space-y-3"
+                          >
+                            <div className="flex gap-3 items-start">
+                              <div
+                                onClick={() => setPreviewPhoto(getFullImageUrl(candidate.photoUrl))}
+                                className="w-20 h-20 rounded-lg bg-surface-container overflow-hidden border border-outline-variant/30 cursor-zoom-in flex-shrink-0"
+                              >
+                                <img
+                                  src={getFullImageUrl(candidate.photoUrl)}
+                                  alt="Candidate evidence"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+
+                              <div className="min-w-0 text-xs font-sans space-y-1 flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-headline font-bold text-sm text-on-surface block capitalize truncate">
+                                    {candidate.deviceType.replace('_', ' ')}
+                                  </span>
+                                  <Badge status={candidate.status} />
+                                </div>
+                                <p className="text-on-surface-variant">
+                                  Master Asset Tag: <strong className="font-mono text-on-surface">{candidate.deviceNumber || 'N/A'}</strong>
+                                </p>
+                                <p className="text-[11px] text-on-surface-variant font-medium">
+                                  {candidate.reportCount} Existing Student {candidate.reportCount === 1 ? 'Report' : 'Reports'}
+                                </p>
                               </div>
                             </div>
-                          </div>
 
-                          <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end">
-                            <Link
-                              to={`/reports/${candidate.id}`}
-                              className="px-2.5 py-1 rounded border border-outline-variant/50 hover:bg-surface-container text-xs font-headline font-semibold text-on-surface transition-colors"
-                            >
-                              View Ticket
-                            </Link>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedFlagged(report);
-                                setSelectedTargetId(candidate.id);
-                              }}
-                              disabled={processingAction}
-                            >
-                              Merge Here
-                            </Button>
+                            <div className="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/20">
+                              <Link
+                                to={`/reports/${candidate.id}`}
+                                className="px-3 py-1.5 rounded-lg border border-outline-variant/50 hover:bg-surface-container text-xs font-headline font-semibold text-on-surface transition-colors"
+                              >
+                                View Master Ticket
+                              </Link>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedFlagged(report);
+                                  setSelectedTargetId(candidate.id);
+                                }}
+                                disabled={processingAction}
+                              >
+                                Merge Into This Ticket →
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-8 rounded-xl bg-surface-container-low text-center text-xs text-on-surface-variant border border-outline-variant/20">
-                      No open matching equipment found in this room. Recommend keeping as a separate issue.
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-8 rounded-xl bg-surface-container-lowest text-center text-xs text-on-surface-variant border border-outline-variant/20 my-auto">
+                        No open tickets found in Room {report.roomName}. Recommend keeping as a separate issue.
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

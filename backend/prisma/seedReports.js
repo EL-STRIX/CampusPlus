@@ -13,9 +13,9 @@ async function main() {
   await prisma.report.deleteMany();
 
   // Sample photo URLs from uploads
-  const photo1 = '/uploads/b5ce83d0-7168-4bfd-9e67-ad50aa9d7af5.png';
+  const photo1 = '/uploads/computer_lab.jpg';
   const photo2 = '/uploads/09de6330-3c02-460d-85a6-24481a89e90c.jpeg';
-  const photo3 = '/uploads/5ff6ccf0-5e42-4a9c-acbf-6556c34fef56.jpg';
+  const photo3 = '/uploads/science_lab.jpg';
 
   // 1. High Priority Computer Lab Issue (Open - 3 reports)
   const rep1 = await prisma.report.create({
