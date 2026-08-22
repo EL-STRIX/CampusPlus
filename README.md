@@ -90,7 +90,8 @@
 
 ## 🚀 Core Features
 
-- **Zero-Login Student Reporting:** Frictionless, <60-second issue submission with live camera capture or gallery upload, cascading building/room selectors, and automatic device validation.
+- **Zero-Login Student Reporting:** Frictionless, <60-second issue submission with live camera capture or gallery upload, cascading building/room selectors, and dynamic equipment cataloging tailored to the student's department and specialization.
+- **Live Public Ticket Tracking:** Instant status tracking by Ticket ID (`/track`), displaying a 3-stage progress workflow (*Submitted* $\rightarrow$ *Technician Assigned* $\rightarrow$ *Resolved*), community priority boost indicators, and technician maintenance audit logs without requiring account registration.
 - **Intelligent Deduplication Engine:** Automatically detects existing open complaints matching `(roomId, deviceNumber)`. Aggregates reporter notes and increments report count to surface high-frequency lab failures.
 - **"Needs Review" Queue:** Flags untagged or ambiguous hardware reports for administrative verification with side-by-side suggested candidates in the same room.
 - **Transactional Ticket Merging:** Allows facilities managers to merge duplicate reports into master tickets with full reporter history preservation.
@@ -118,8 +119,8 @@ Campusplus/
 ├── student-app/              # Student-facing React SPA
 │   ├── src/
 │   │   ├── api/              # API client methods for student actions
-│   │   ├── components/       # UI elements (Header, Banner, Button, Dropdown)
-│   │   ├── pages/            # ReportIssuePage, ReportSuccessPage, LiveTicker
+│   │   ├── components/       # UI elements (Header, Footer, Button, FormField)
+│   │   ├── pages/            # HomePage, ReportIssuePage, ConfirmationPage, TrackReportPage
 │   │   └── main.jsx          # Student app entry point
 │   └── index.html
 ├── admin-app/                # Facilities Admin React SPA
@@ -300,30 +301,30 @@ server {
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/api/v1/health` | Service health status check |
-| `GET` | `/api/v1/locations` | List all campus buildings and associated rooms |
-| `GET` | `/api/v1/locations/rooms/:roomId/equipment` | Retrieve lab equipment catalog for selected room |
+| `GET` | `/api/v1/departments` | List academic departments and cascading streams |
+| `GET` | `/api/v1/buildings` | List campus buildings and associated rooms |
 | `POST` | `/api/v1/reports` | Submit hardware fault report with image evidence (multipart/form-data) |
-| `GET` | `/api/v1/reports/recent` | Public ticker of recently resolved campus issues |
+| `GET` | `/api/v1/reports/track/:id` | Public zero-login ticket status tracking (supports UUID, prefix, asset tags) |
 
 ### Authenticated Admin Endpoints (Requires `Bearer <JWT_TOKEN>`)
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/v1/auth/login` | Authenticate admin credentials and issue JWT |
-| `GET` | `/api/v1/admin/dashboard` | Dashboard analytics (Total, Open, In Progress, Resolved, Needs Review) |
-| `GET` | `/api/v1/admin/reports` | Filterable list of all reports (status, building, room, lab type, search) |
+| `POST` | `/api/v1/admin/login` | Authenticate admin credentials and issue JWT |
+| `GET` | `/api/v1/admin/dashboard-summary` | Dashboard analytics (Total, Open, In Progress, Resolved, Needs Review) |
+| `GET` | `/api/v1/admin/reports` | Filterable list of all reports (status, building, room, search) |
 | `GET` | `/api/v1/admin/reports/:id` | Detailed view of report, attached reporters, and audit history |
 | `PATCH` | `/api/v1/admin/reports/:id/status` | Transition ticket lifecycle status (`open`, `in_progress`, `resolved`, `rejected`) |
 | `GET` | `/api/v1/admin/reports/needs-review` | Queue of flagged untagged reports with candidate room matches |
 | `POST` | `/api/v1/admin/reports/:id/merge` | Merge flagged report into target master ticket |
-| `POST` | `/api/v1/admin/reports/:id/separate` | Dismiss flagged status and confirm report as distinct ticket |
-| `PATCH` | `/api/v1/admin/profile/password` | Update logged-in administrator password |
+| `POST` | `/api/v1/admin/reports/:id/keep-separate` | Dismiss flagged status and confirm report as distinct ticket |
+| `PATCH` | `/api/v1/admin/change-password` | Update logged-in administrator password |
 
 ---
 
 ## 🧪 Testing & Quality Assurance
 
 ### Run Automated Backend Test Suite
-The backend contains 47 comprehensive integration and unit tests covering duplicate matching, status transitions, authentication, and validation:
+The backend contains 49 comprehensive integration and unit tests covering duplicate matching, status transitions, public ticket tracking, authentication, and validation:
 ```bash
 npm --prefix backend test
 ```

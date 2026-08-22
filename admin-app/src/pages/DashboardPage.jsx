@@ -31,7 +31,7 @@ export default function DashboardPage() {
         setError(null);
         const [summaryData, reportsData] = await Promise.all([
           getDashboardSummary(),
-          getReports({ sortBy: 'reportCount', sortOrder: 'desc', limit: 6, status: 'open' }),
+          getReports({ sortBy: 'createdAt', sortOrder: 'desc', limit: 10, status: 'open' }),
         ]);
         setSummary(summaryData);
         setTopReports(reportsData.reports || []);
@@ -209,10 +209,10 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Top Priority Reports Table */}
+      {/* Active Open Reports Table */}
       <Card
-        title="Top Priority Reports"
-        subtitle="Open issues ranked by student report frequency"
+        title="Active Open Reports"
+        subtitle="Latest campus hardware complaints and elevated student reports"
         action={
           <Link
             to="/reports"

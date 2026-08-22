@@ -124,13 +124,13 @@ async function getReports(req, res, next) {
       ];
     }
 
-    // Determine sorting (Default: open (higher priority/reportCount first) -> in_progress -> resolved -> rejected)
+    // Determine sorting (Default: open (newest first) -> in_progress -> resolved -> rejected)
     let orderByClause;
     if (sortBy === 'status_workflow' || !sortBy || sortBy === 'default') {
       orderByClause = [
         { status: 'asc' },
-        { reportCount: 'desc' },
         { createdAt: 'desc' },
+        { reportCount: 'desc' },
       ];
     } else if (sortBy === 'createdAt') {
       const direction = sortOrder.toLowerCase() === 'asc' ? 'asc' : 'desc';
@@ -140,7 +140,7 @@ async function getReports(req, res, next) {
       orderByClause = [{ reportCount: direction }, { createdAt: 'desc' }];
     } else if (sortBy === 'status') {
       const direction = sortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
-      orderByClause = [{ status: direction }, { reportCount: 'desc' }, { createdAt: 'desc' }];
+      orderByClause = [{ status: direction }, { createdAt: 'desc' }, { reportCount: 'desc' }];
     } else {
       const validSortFields = ['reportCount', 'createdAt', 'status', 'updatedAt'];
       const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';

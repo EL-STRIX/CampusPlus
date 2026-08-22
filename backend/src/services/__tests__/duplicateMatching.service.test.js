@@ -23,8 +23,16 @@ describe('duplicateMatching.service', () => {
   afterAll(async () => {
     // Clean up test data
     if (testRoomId) {
-      await prisma.reportReporter.deleteMany();
-      await prisma.report.deleteMany({ where: { roomId: testRoomId } });
+      const reportsToDelete = await prisma.report.findMany({
+        where: { roomId: testRoomId },
+        select: { id: true },
+      });
+      const reportIds = reportsToDelete.map((r) => r.id);
+      if (reportIds.length > 0) {
+        await prisma.reportReporter.deleteMany({ where: { reportId: { in: reportIds } } });
+        await prisma.reportStatusHistory.deleteMany({ where: { reportId: { in: reportIds } } });
+        await prisma.report.deleteMany({ where: { id: { in: reportIds } } });
+      }
       await prisma.room.delete({ where: { id: testRoomId } });
     }
     if (testBuildingId) {
