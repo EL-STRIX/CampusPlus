@@ -8,10 +8,10 @@ export default function HomePage() {
       {/* Hero Section with Visual Gradient & Tech Teal Overlay */}
       <section className="relative w-full min-h-[560px] md:min-h-[620px] flex items-center justify-center overflow-hidden bg-primary">
         <div
-          className="absolute inset-0 z-0 bg-cover bg-center opacity-25 mix-blend-luminosity"
+          className="absolute inset-0 z-0 bg-cover bg-center opacity-30 mix-blend-luminosity"
           style={{
             backgroundImage:
-              "url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1920&q=80')",
+              "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/IIT_Roorkee_Main_Building.jpg')",
           }}
         ></div>
         <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/85 to-primary/60 z-0"></div>
@@ -87,8 +87,8 @@ export default function HomePage() {
         <div className="max-w-container-max mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="rounded-2xl overflow-hidden shadow-card border border-outline-variant/30 h-[360px] relative">
             <img
-              src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80"
-              alt="Indian University Computer Laboratory and Tech Center"
+              src="https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&w=1200&q=80"
+              alt="Engineering College Computer Hardware Lab Fault Diagnosis"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-primary/10"></div>
