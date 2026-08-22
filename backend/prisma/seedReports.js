@@ -9,6 +9,9 @@ async function main() {
     throw new Error('Admin user not found. Please ensure database has admin user.');
   }
 
+  // Clear existing reports so fresh canonical records are seeded
+  await prisma.report.deleteMany();
+
   // Sample photo URLs from uploads
   const photo1 = '/uploads/b5ce83d0-7168-4bfd-9e67-ad50aa9d7af5.png';
   const photo2 = '/uploads/09de6330-3c02-460d-85a6-24481a89e90c.jpeg';
@@ -32,7 +35,7 @@ async function main() {
         create: [
           {
             studentCode: 'BWU/BCA/24/330',
-            department: 'Computer Applications (MCA / BCA)',
+            department: 'Computer Applications (BCA / MCA / B.Sc IT)',
             stream: 'Bachelor of Computer Applications (BCA)',
             labType: 'Computer / Software Systems Lab',
             yearSemester: '1st Year / Sem 1',
@@ -41,7 +44,7 @@ async function main() {
           },
           {
             studentCode: 'BWU/BCA/24/345',
-            department: 'Computer Applications (MCA / BCA)',
+            department: 'Computer Applications (BCA / MCA / B.Sc IT)',
             stream: 'Bachelor of Computer Applications (BCA)',
             labType: 'Computer / Software Systems Lab',
             yearSemester: '1st Year / Sem 1',
@@ -50,7 +53,7 @@ async function main() {
           },
           {
             studentCode: 'BWU/MCA/23/012',
-            department: 'Computer Applications (MCA / BCA)',
+            department: 'Computer Applications (BCA / MCA / B.Sc IT)',
             stream: 'Master of Computer Applications (MCA)',
             labType: 'Computer / Software Systems Lab',
             yearSemester: '2nd Year / Sem 3',
@@ -165,7 +168,7 @@ async function main() {
         create: [
           {
             studentCode: 'BWU/ME/23/078',
-            department: 'Mechanical Engineering',
+            department: 'Mechanical Engineering (ME)',
             stream: 'B.Tech in Robotics & Mechatronics',
             labType: 'Robotics, Automation & Mechatronics Lab',
             yearSemester: '2nd Year / Sem 3',
@@ -200,7 +203,7 @@ async function main() {
         create: [
           {
             studentCode: 'BWU/BME/23/014',
-            department: 'Biomedical Engineering & Medical Electronics',
+            department: 'Biomedical & Medical Electronics Engineering',
             stream: 'B.Tech in Biomedical Engineering',
             labType: 'Biomedical Engineering & Medical Diagnostics Lab',
             yearSemester: '2nd Year / Sem 3',
@@ -209,7 +212,7 @@ async function main() {
           },
           {
             studentCode: 'BWU/BME/23/022',
-            department: 'Biomedical Engineering & Medical Electronics',
+            department: 'Biomedical & Medical Electronics Engineering',
             stream: 'B.Tech in Biomedical Engineering',
             labType: 'Biomedical Engineering & Medical Diagnostics Lab',
             yearSemester: '2nd Year / Sem 3',
@@ -244,7 +247,7 @@ async function main() {
         create: [
           {
             studentCode: 'BWU/CIVIL/22/089',
-            department: 'Civil Engineering',
+            department: 'Civil Engineering (CE)',
             stream: 'B.Tech in Structural Engineering',
             labType: 'Civil, Geotechnical & Concrete Testing Lab',
             yearSemester: '3rd Year / Sem 6',

@@ -470,7 +470,7 @@ export default function AllReportsPage() {
               }}
               className="w-full appearance-none text-xs font-headline font-semibold pl-3.5 pr-8 py-2.5 rounded-xl border border-outline-variant/60 bg-surface-container-low text-on-surface hover:bg-surface-container-lowest focus:border-primary focus:outline-none transition-colors cursor-pointer shadow-sm"
             >
-              <option value="status_workflow_asc">⚡ Sort: Open Priority → In Progress → Solved → Rejected</option>
+              <option value="status_workflow_asc">⚡ Sort: Open → In Progress → Solved → Rejected</option>
               <option value="createdAt_desc">🕒 Sort: All Newest First</option>
               <option value="createdAt_asc">⏳ Sort: All Oldest First</option>
               <option value="reportCount_desc">🔥 Sort: Priority (Most Reported)</option>

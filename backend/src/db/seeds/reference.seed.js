@@ -186,6 +186,18 @@ const INSTITUTION_DEPARTMENTS = [
     ],
   },
   {
+    name: 'Pharmacy & Pharmaceutical Sciences',
+    streams: [
+      'Bachelor of Pharmacy (B.Pharm - Core)',
+      'B.Pharm (Ayurveda / Herbal Drug Technology)',
+      'M.Pharm (Pharmaceutics & Formulation)',
+      'M.Pharm (Pharmacology & Toxicology)',
+      'M.Pharm (Pharmaceutical Chemistry & Analysis)',
+      'M.Pharm (Pharmacognosy & Phytochemistry)',
+      'Doctor of Pharmacy (Pharm.D)',
+    ],
+  },
+  {
     name: 'Physics & Basic Sciences (Applied Laboratory)',
     streams: [
       'Applied Physics & Optics/Laser Lab',

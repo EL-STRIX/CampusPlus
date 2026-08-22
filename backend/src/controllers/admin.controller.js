@@ -58,12 +58,14 @@ async function getReports(req, res, next) {
 
     // Filter by department (matches any reporter with that department)
     if (department && department.trim()) {
+      const deptRaw = department.trim();
+      const coreName = deptRaw.split('(')[0].trim();
       where.reporters = {
         some: {
-          department: {
-            contains: department.trim(),
-            mode: 'insensitive',
-          },
+          OR: [
+            { department: { contains: deptRaw, mode: 'insensitive' } },
+            { department: { contains: coreName, mode: 'insensitive' } },
+          ],
         },
       };
     }
