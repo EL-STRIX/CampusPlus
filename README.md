@@ -1,102 +1,339 @@
-# CampusPlus — Campus Hardware Fault Reporting & Tracking System
+# CampusPlus — Campus Hardware Fault Reporting & Tracking Platform
 
-> A full-stack, enterprise-grade hardware fault reporting and facilities management platform for university lab environments.
+[![Node.js](https://img.shields.io/badge/Node.js-v18%2B%20%7C%20v20%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-v14%2B-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-v5.18-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![React](https://img.shields.io/badge/React-v18.3-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v3.4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+> **CampusPlus** is a production-ready, full-stack campus facilities and laboratory hardware fault reporting platform. It bridges the gap between student lab issue reporting and facility maintenance workflows through frictionless reporting, automated deduplication, and complete lifecycle audit trails.
 
 ---
 
-## 🏛 System Architecture Overview
+## 📑 Table of Contents
 
-CampusPlus is structured as a robust monorepo with 3 distinct components:
+- [Architecture Overview](#-architecture-overview)
+- [Tech Stack](#-tech-stack)
+- [Core Features](#-core-features)
+- [Monorepo Directory Structure](#-monorepo-directory-structure)
+- [Environment Configuration](#-environment-configuration)
+- [Local Development Setup](#-local-development-setup)
+- [Production Deployment Guide](#-production-deployment-guide)
+  - [1. Backend API Deployment](#1-backend-api-deployment-render--railway--vps--docker)
+  - [2. Frontend SPAs Deployment](#2-frontend-spas-deployment-vercel--netlify--cloudflare)
+  - [3. Production Nginx Reverse Proxy](#3-production-nginx-reverse-proxy-sample)
+- [REST API Reference](#-rest-api-reference)
+- [Testing & Quality Assurance](#-testing--quality-assurance)
+- [Default Admin Credentials](#-default-admin-credentials)
+- [Technical Documentation](#-technical-documentation)
+
+---
+
+## 🏛 Architecture Overview
+
+```
++---------------------------------------------------------------------------------------+
+|                                     CLIENT LAYER                                      |
+|                                                                                       |
+|   +------------------------------------+    +------------------------------------+    |
+|   |            Student App             |    |             Admin App              |    |
+|   |  • Zero-login complaint filing     |    |  • Operations Dashboard & Metrics  |    |
+|   |  • Camera photo capture & upload   |    |  • Status Lifecycle & Timeline     |    |
+|   |  • Public live issue ticker        |    |  • Needs Review & Ticket Merging   |    |
+|   |  (React 18 + Vite + TailwindCSS)   |    |  (React 18 + Vite + TailwindCSS)   |    |
+|   +-----------------+------------------+    +-----------------+------------------+    |
++---------------------|-----------------------------------------|-----------------------+
+                      | REST API Requests                       | Authenticated JWT (Bearer)
+                      v                                         v
++---------------------------------------------------------------------------------------+
+|                                     BACKEND API                                       |
+|                                                                                       |
+|   +-------------------------------------------------------------------------------+   |
+|   |                            Express.js REST API Server                         |   |
+|   |  • Helmet Security Headers               • Pino HTTP Structured Logging       |   |
+|   |  • Express Rate Limiting (DDoS protect)  • Multer File Upload Engine          |   |
+|   |  • JWT Authentication Middleware         • Zod Payload Validation             |   |
+|   |  • Deduplication & Grouping Engine       • Transactional Merge Manager        |   |
+|   +---------------------------------------+---------------------------------------+   |
++-------------------------------------------|-------------------------------------------+
+                                            | Prisma ORM (Type-Safe Queries)
+                                            v
++---------------------------------------------------------------------------------------+
+|                                    DATABASE LAYER                                     |
+|                                                                                       |
+|   +-------------------------------------------------------------------------------+   |
+|   |                        PostgreSQL Relational Database                         |   |
+|   |  • Reports Table (status, fault, photo)  • Reporters (student details, notes) |   |
+|   |  • StatusHistory (immutable audit logs)  • Admins (bcrypt hashed credentials) |   |
+|   |  • Buildings & Rooms (reference data)    • Equipment Lookup Metadata          |   |
+|   +-------------------------------------------------------------------------------+   |
++---------------------------------------------------------------------------------------+
+```
+
+---
+
+## ⚡ Tech Stack
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| **Backend Framework** | Node.js & Express.js | High-throughput REST API service |
+| **Database & ORM** | PostgreSQL & Prisma ORM | Relational data persistence with declarative schemas & migrations |
+| **Authentication** | JSON Web Tokens (`jsonwebtoken`) & `bcrypt` | Secure, stateless admin authentication and password hashing |
+| **Security & Logging** | `helmet`, `express-rate-limit`, `pino`, `zod` | DDoS prevention, strict input validation, security headers, and structured logging |
+| **File Storage** | Multer (`/uploads`) | Validated multipart/form-data image uploads (JPEG, PNG, WebP) |
+| **Student Frontend** | React 18, Vite, TailwindCSS | Lightweight, mobile-first responsive reporting interface |
+| **Admin Frontend** | React 18, Vite, TailwindCSS | Operational control center with filterable tables, charts, and review queues |
+| **Testing** | Jest, Supertest | Comprehensive end-to-end integration and API unit tests |
+
+---
+
+## 🚀 Core Features
+
+- **Zero-Login Student Reporting:** Frictionless, <60-second issue submission with live camera capture or gallery upload, cascading building/room selectors, and automatic device validation.
+- **Intelligent Deduplication Engine:** Automatically detects existing open complaints matching `(roomId, deviceNumber)`. Aggregates reporter notes and increments report count to surface high-frequency lab failures.
+- **"Needs Review" Queue:** Flags untagged or ambiguous hardware reports for administrative verification with side-by-side suggested candidates in the same room.
+- **Transactional Ticket Merging:** Allows facilities managers to merge duplicate reports into master tickets with full reporter history preservation.
+- **Immutable Status Audit Trail:** Tracks every lifecycle state change (`Open` $\rightarrow$ `In Progress` $\rightarrow$ `Resolved` / `Rejected`) with timestamped admin attribution and technician notes.
+- **Admin Profile & Credential Management:** Enforces secure credential updates with real-time password strength validation and bcrypt hashing.
+
+---
+
+## 📂 Monorepo Directory Structure
 
 ```
 Campusplus/
-├── backend/            # Express.js REST API + PostgreSQL with Prisma ORM
-├── student-app/        # Student-facing React SPA (TailwindCSS + Vite)
-├── admin-app/          # Facilities Admin Console React SPA (TailwindCSS + Vite)
-└── docs/               # PRD, TRD, Architecture, Design System, Phases
+├── backend/                  # Express.js REST API service
+│   ├── prisma/
+│   │   ├── schema.prisma     # PostgreSQL data models & relations
+│   │   ├── migrations/       # Versioned Prisma migration history
+│   │   └── seedReports.js    # Database seeder with realistic lab data
+│   ├── src/
+│   │   ├── controllers/      # Request handlers (admin, report, auth, location)
+│   │   ├── middlewares/      # Auth guard, rate limiter, multer, error handler
+│   │   ├── routes/           # Versioned API routes (/api/v1/...)
+│   │   ├── services/         # Business logic (deduplication, matching engine)
+│   │   └── server.js         # Server entry point & Express configuration
+│   └── uploads/              # Uploaded evidence images directory
+├── student-app/              # Student-facing React SPA
+│   ├── src/
+│   │   ├── api/              # API client methods for student actions
+│   │   ├── components/       # UI elements (Header, Banner, Button, Dropdown)
+│   │   ├── pages/            # ReportIssuePage, ReportSuccessPage, LiveTicker
+│   │   └── main.jsx          # Student app entry point
+│   └── index.html
+├── admin-app/                # Facilities Admin React SPA
+│   ├── src/
+│   │   ├── api/              # Authenticated admin API client
+│   │   ├── components/       # Tables, Badges, Modals, StatusStepper, Sidebar
+│   │   ├── context/          # Auth context & session provider
+│   │   ├── pages/            # Dashboard, AllReports, ReportDetail, NeedsReview, Profile
+│   │   └── main.jsx          # Admin app entry point
+│   └── index.html
+└── docs/                     # Architectural, design, and PRD specifications
 ```
-
-### Core Features:
-- **Zero-Login Student Portal:** High-efficiency, frictionless report submission under 60 seconds with live photo upload and cascading location selectors.
-- **Intelligent Duplicate Matching Engine:** Automatically groups reports by `(roomId, deviceNumber)` within PostgreSQL transactions. Increments report frequency and appends reporter details to prioritize severe issues.
-- **Needs Review Queue:** Untagged hardware reports are automatically flagged for manual admin review with side-by-side suggested candidates in the same room.
-- **Transactional Merging & Audit History:** Administrators can merge duplicate tickets or keep them separate. Every status transition (`Open` → `In Progress` → `Resolved` / `Rejected`) is immutably logged with admin attribution and timestamps.
-- **Pixel-Accurate Visual Design:** Strictly aligned with the connected Stitch MCP design system (Technical Teal `#004349`, Slate `#64748B`, Amber `#F59E0B`, Emerald `#10B981`, Rose `#EF4444`, Purple `#8B5CF6`).
 
 ---
 
-## 🚀 Quickstart & Local Setup
+## ⚙ Environment Configuration
 
-### 1. Prerequisites
-- **Node.js**: v18+ or v20+
-- **PostgreSQL**: v14+ (running on `localhost:5432`)
-- **Git**
+Create `.env` files in their respective package directories before starting the applications:
 
-### 2. Environment Configuration
-Ensure `.env` files are configured:
-
-**`backend/.env`**:
+### `backend/.env`
 ```env
 PORT=5000
 NODE_ENV=development
-DATABASE_URL="postgresql://postgres:hello_psql%401@localhost:5432/campusplus_dev"
-JWT_SECRET="campusplus_jwt_super_secret_production_key_2026"
+DATABASE_URL="postgresql://postgres:password@localhost:5432/campusplus_dev?schema=public"
+JWT_SECRET="your_secure_jwt_random_secret_string_min_32_characters"
 JWT_EXPIRES_IN="8h"
 UPLOAD_DIR="./uploads"
 MAX_FILE_SIZE_MB=5
 ALLOWED_FILE_TYPES="image/jpeg,image/png,image/webp"
-CORS_ORIGIN="http://localhost:3000,http://localhost:3001"
+CORS_ORIGIN="http://localhost:5173,http://localhost:5174"
 ```
 
-**`student-app/.env`**:
+### `student-app/.env`
 ```env
 VITE_API_BASE_URL=http://localhost:5000/api/v1
 ```
 
-**`admin-app/.env`**:
+### `admin-app/.env`
 ```env
 VITE_API_BASE_URL=http://localhost:5000/api/v1
-```
-
-### 3. Database Migration & Seeding
-```bash
-cd backend
-npx prisma migrate deploy
-npx prisma db seed
-```
-
-### 4. Running the Applications
-In 3 separate terminal tabs:
-
-```bash
-# Tab 1: Backend API (Port 5000)
-cd backend
-npm run dev
-
-# Tab 2: Student Portal (Port 3000)
-cd student-app
-npm run dev
-
-# Tab 3: Admin Console (Port 3001)
-cd admin-app
-npm run dev
 ```
 
 ---
 
-## 🧪 Testing & Verification
+## 💻 Local Development Setup
 
-### Run Automated Backend Test Suite (47 Tests, 100% Pass)
+### 1. Prerequisites
+- **Node.js**: `v18.x` or `v20.x` LTS
+- **PostgreSQL**: `v14+` or `v16+` (running locally or via cloud instance)
+- **npm**: `v9+` or `v10+`
+
+### 2. Install Dependencies
+Install all workspace dependencies from the project root:
+```bash
+npm install
+```
+
+### 3. Setup Database Schema & Seed Data
+Navigate to the `backend` directory, run migrations, and seed initial records:
+```bash
+cd backend
+npx prisma migrate deploy
+node prisma/seedReports.js
+cd ..
+```
+
+### 4. Start Development Servers
+Run the backend and frontends in separate terminal windows or concurrently:
+
+```bash
+# Terminal 1: Backend API (Port 5000)
+npm run dev:backend
+
+# Terminal 2: Student Portal (Port 5173)
+npm run dev:student
+
+# Terminal 3: Admin Console (Port 5174)
+npm run dev:admin
+```
+
+- **Student Portal:** `http://localhost:5173`
+- **Admin Console:** `http://localhost:5174`
+- **API Health Check:** `http://localhost:5000/api/v1/health`
+
+---
+
+## 🚢 Production Deployment Guide
+
+### 1. Backend API Deployment (Render / Railway / VPS / Docker)
+
+#### Build & Start Commands:
+- **Build Command:** `npm install && npx prisma generate && npx prisma migrate deploy`
+- **Start Command:** `npm start` (executes `node src/server.js`)
+- **Port:** Configured via `PORT` environment variable (defaults to `5000`).
+
+#### Production Checklist:
+1. **Database Connection:** Provide production `DATABASE_URL` (e.g. Supabase, Neon, AWS RDS, or Managed PostgreSQL).
+2. **CORS Configuration:** Set `CORS_ORIGIN` to the exact public domains of the deployed Student and Admin apps (e.g. `https://report.yourcampus.edu,https://admin.yourcampus.edu`).
+3. **Uploads Directory Persistence:** If deploying to containerized/ephemeral platforms (Render, Railway, Fly.io), attach a persistent disk for `./uploads` or configure S3 storage.
+4. **Secrets:** Ensure `JWT_SECRET` is a secure 64-character cryptographic token.
+
+---
+
+### 2. Frontend SPAs Deployment (Vercel / Netlify / Cloudflare)
+
+Both `student-app` and `admin-app` are Single Page Applications built with Vite.
+
+#### Build Configuration:
+- **Root Directory:** `student-app` (for Student Portal) or `admin-app` (for Admin Console)
+- **Build Command:** `npm run build`
+- **Output Directory:** `dist`
+- **Environment Variable:** `VITE_API_BASE_URL=https://api.yourcampus.edu/api/v1`
+
+#### Client-Side Routing Configuration (SPA Fallback):
+To ensure page refreshes and direct links (e.g., `/reports/123`, `/needs-review`) resolve to `index.html`:
+
+**For Vercel (`vercel.json` in app root):**
+```json
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
+```
+
+**For Netlify (`_redirects` in `public/` directory):**
+```
+/*    /index.html   200
+```
+
+---
+
+### 3. Production Nginx Reverse Proxy (Sample)
+
+If deploying the entire stack to a single Ubuntu/Debian VPS with Nginx:
+
+```nginx
+server {
+    listen 80;
+    server_name campusplus.yourdomain.edu;
+
+    # Static uploads from backend
+    location /uploads/ {
+        alias /var/www/campusplus/backend/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+    }
+
+    # REST API Proxy
+    location /api/ {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Admin App SPA
+    location /admin {
+        alias /var/www/campusplus/admin-app/dist;
+        try_files $uri $uri/ /admin/index.html;
+    }
+
+    # Student App SPA (Root)
+    location / {
+        root /var/www/campusplus/student-app/dist;
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+---
+
+## 📡 REST API Reference
+
+### Public / Student Endpoints
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/health` | Service health status check |
+| `GET` | `/api/v1/locations` | List all campus buildings and associated rooms |
+| `GET` | `/api/v1/locations/rooms/:roomId/equipment` | Retrieve lab equipment catalog for selected room |
+| `POST` | `/api/v1/reports` | Submit hardware fault report with image evidence (multipart/form-data) |
+| `GET` | `/api/v1/reports/recent` | Public ticker of recently resolved campus issues |
+
+### Authenticated Admin Endpoints (Requires `Bearer <JWT_TOKEN>`)
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v1/auth/login` | Authenticate admin credentials and issue JWT |
+| `GET` | `/api/v1/admin/dashboard` | Dashboard analytics (Total, Open, In Progress, Resolved, Needs Review) |
+| `GET` | `/api/v1/admin/reports` | Filterable list of all reports (status, building, room, lab type, search) |
+| `GET` | `/api/v1/admin/reports/:id` | Detailed view of report, attached reporters, and audit history |
+| `PATCH` | `/api/v1/admin/reports/:id/status` | Transition ticket lifecycle status (`open`, `in_progress`, `resolved`, `rejected`) |
+| `GET` | `/api/v1/admin/reports/needs-review` | Queue of flagged untagged reports with candidate room matches |
+| `POST` | `/api/v1/admin/reports/:id/merge` | Merge flagged report into target master ticket |
+| `POST` | `/api/v1/admin/reports/:id/separate` | Dismiss flagged status and confirm report as distinct ticket |
+| `PATCH` | `/api/v1/admin/profile/password` | Update logged-in administrator password |
+
+---
+
+## 🧪 Testing & Quality Assurance
+
+### Run Automated Backend Test Suite
+The backend contains 47 comprehensive integration and unit tests covering duplicate matching, status transitions, authentication, and validation:
 ```bash
 npm --prefix backend test
 ```
 
-### Run Monorepo Linter
+### Run Code Quality Linter
 ```bash
 npm run lint
 ```
 
-### Build Production Artifacts
+### Verify Production Builds
 ```bash
 npm --prefix student-app run build
 npm --prefix admin-app run build
@@ -105,14 +342,28 @@ npm --prefix admin-app run build
 ---
 
 ## 🔐 Default Admin Credentials
+
+When the database is initialized using the seed script, the following default administrator account is available:
+
 - **Username:** `admin`
 - **Password:** `admin123`
 
+*(Note: In production environments, immediately change this password via the **Admin Profile** page.)*
+
 ---
 
-## 📄 Documentation Reference
-- [`docs/PRD.md`](docs/PRD.md): Product Requirements & User Stories
-- [`docs/TRD.md`](docs/TRD.md): Technical Requirements & API Contracts
-- [`docs/architecture.md`](docs/architecture.md): System Design & Security
-- [`docs/design.md`](docs/design.md): Stitch MCP Design Tokens & UI Guidelines
-- [`docs/phases.md`](docs/phases.md): Step-by-Step Implementation Tracker
+## 📚 Technical Documentation
+
+For in-depth architectural diagrams, database entity relationship schemas, and design guidelines, consult the `docs/` directory:
+
+- [`docs/PRD.md`](docs/PRD.md) — Product Requirements & User Stories
+- [`docs/TRD.md`](docs/TRD.md) — Technical Specifications & API Contracts
+- [`docs/architecture.md`](docs/architecture.md) — System Design, Security & Scalability
+- [`docs/design.md`](docs/design.md) — UI Component Tokens & Color Guidelines
+- [`docs/phases.md`](docs/phases.md) — Phased Implementation & Validation Tracker
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
