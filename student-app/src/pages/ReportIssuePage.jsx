@@ -871,11 +871,6 @@ export default function ReportIssuePage() {
                 <h2 className="text-base font-headline font-bold text-on-surface">
                   Equipment & Device Details
                 </h2>
-                {!selectedLabType && (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-                    🔒 Locked: Select Lab Type First
-                  </span>
-                )}
               </div>
               <div className="flex flex-col gap-4">
                 <Select
@@ -884,7 +879,7 @@ export default function ReportIssuePage() {
                   name="deviceType"
                   placeholder={
                     !selectedLabType
-                      ? '🔒 Select Type of Laboratory First (Locked)'
+                      ? ' Select Type of Laboratory First (Locked)'
                       : selectedLabType === 'OTHER_LAB'
                       ? customLabType
                         ? `Select Equipment for ${customLabType}`
