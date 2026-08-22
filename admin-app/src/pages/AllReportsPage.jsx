@@ -395,8 +395,9 @@ export default function AllReportsPage() {
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header & Search Bar Card */}
-      <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-card space-y-5">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+      <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-card space-y-4">
+        {/* Top Row: Page Title & Global Search */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-outline-variant/20">
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-headline font-bold text-on-surface tracking-tight">
@@ -411,66 +412,39 @@ export default function AllReportsPage() {
             </p>
           </div>
 
-          {/* Search Box & Sort Selector */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-            <form onSubmit={handleSearchSubmit} className="relative flex-grow sm:w-72">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </span>
-              <input
-                type="text"
-                placeholder="Search Tag, Student, Room, Device..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full pl-10 pr-9 py-2 text-xs font-sans rounded-xl border border-outline-variant/60 bg-surface-container-low focus:bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
-              />
-              {searchInput && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchInput('');
-                    updateFilter('search', '');
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface text-xs font-bold"
-                >
-                  ×
-                </button>
-              )}
-            </form>
-
-            {/* Sort Dropdown */}
-            <div className="relative">
-              <select
-                value={`${sortByParam}_${sortOrderParam}`}
-                onChange={(e) => {
-                  const [sb, so] = e.target.value.split('_');
-                  const next = new URLSearchParams(searchParams);
-                  next.set('sortBy', sb);
-                  next.set('sortOrder', so);
-                  setSearchParams(next);
+          {/* Search Box */}
+          <form onSubmit={handleSearchSubmit} className="relative w-full md:w-80">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+            <input
+              type="text"
+              placeholder="Search Tag, Student, Room, Device..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-full pl-10 pr-9 py-2 text-xs font-sans rounded-xl border border-outline-variant/60 bg-surface-container-low focus:bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchInput('');
+                  updateFilter('search', '');
                 }}
-                className="w-full sm:w-auto appearance-none text-xs font-headline font-semibold pl-3.5 pr-8 py-2 rounded-xl border border-outline-variant/60 bg-surface-container-low text-on-surface hover:bg-surface-container-lowest focus:border-primary focus:outline-none transition-colors cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface text-xs font-bold"
               >
-                <option value="status_workflow_asc">Sort: Status Flow (New → In Progress → Solved → Rejected)</option>
-                <option value="createdAt_desc">Sort: All Newest First</option>
-                <option value="createdAt_asc">Sort: All Oldest First</option>
-                <option value="reportCount_desc">Sort: Priority (Most Reported)</option>
-              </select>
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </span>
-            </div>
-          </div>
+                ×
+              </button>
+            )}
+          </form>
         </div>
 
-        {/* Filter Controls Toolbar */}
-        <div className="pt-4 border-t border-outline-variant/20">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Filter Label */}
+        {/* Bottom Row: Unified Filter Strip & Sort Selector */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pt-1">
+          {/* Left: Filter Controls */}
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
             <span className="text-xs font-headline font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5 mr-1">
               <svg className="w-3.5 h-3.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -503,7 +477,7 @@ export default function AllReportsPage() {
             </div>
 
             {/* Department Filter */}
-            <div className="relative min-w-[170px] max-w-[220px]">
+            <div className="relative min-w-[160px] max-w-[210px]">
               <select
                 value={departmentParam}
                 onChange={(e) => updateFilter('department', e.target.value)}
@@ -528,7 +502,7 @@ export default function AllReportsPage() {
             </div>
 
             {/* Laboratory Type Filter */}
-            <div className="relative min-w-[170px] max-w-[240px]">
+            <div className="relative min-w-[170px] max-w-[230px]">
               <select
                 value={labTypeParam}
                 onChange={(e) => {
@@ -565,7 +539,7 @@ export default function AllReportsPage() {
             </div>
 
             {/* Device / Equipment Filter */}
-            <div className="relative min-w-[150px] max-w-[230px]">
+            <div className="relative min-w-[150px] max-w-[220px]">
               <select
                 value={deviceTypeParam}
                 onChange={(e) => updateFilter('deviceType', e.target.value)}
@@ -597,14 +571,39 @@ export default function AllReportsPage() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="inline-flex items-center gap-1 text-xs font-headline font-semibold text-status-rejected hover:bg-red-100/60 ml-auto px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 transition-colors"
+                className="inline-flex items-center gap-1 text-xs font-headline font-semibold text-status-rejected hover:bg-red-100/60 px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 transition-colors"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                Reset Filters
+                Reset
               </button>
             )}
+          </div>
+
+          {/* Right: Sort Control */}
+          <div className="relative flex-shrink-0 w-full sm:w-auto">
+            <select
+              value={`${sortByParam}_${sortOrderParam}`}
+              onChange={(e) => {
+                const [sb, so] = e.target.value.split('_');
+                const next = new URLSearchParams(searchParams);
+                next.set('sortBy', sb);
+                next.set('sortOrder', so);
+                setSearchParams(next);
+              }}
+              className="w-full sm:w-auto appearance-none text-xs font-headline font-semibold pl-3.5 pr-8 py-2 rounded-xl border border-outline-variant/60 bg-surface-container-low text-on-surface hover:bg-surface-container-lowest focus:border-primary focus:outline-none transition-colors cursor-pointer shadow-sm"
+            >
+              <option value="status_workflow_asc">Sort: Status Flow (Open Priority → In Progress → Solved → Rejected)</option>
+              <option value="createdAt_desc">Sort: All Newest First</option>
+              <option value="createdAt_asc">Sort: All Oldest First</option>
+              <option value="reportCount_desc">Sort: Priority (Most Reported)</option>
+            </select>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
           </div>
         </div>
       </div>
