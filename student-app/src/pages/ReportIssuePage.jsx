@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDepartments, getBuildings, submitFaultReport } from '../api/reports';
+import { getDepartments, submitFaultReport } from '../api/reports';
 import Button from '../components/Button';
 import { Input, Select, Textarea } from '../components/FormField';
 
@@ -64,7 +64,6 @@ export default function ReportIssuePage() {
 
   // Reference Data State
   const [departments, setDepartments] = useState([]);
-  const [buildings, setBuildings] = useState([]);
   const [loadingRefData, setLoadingRefData] = useState(true);
 
   // Form Fields
@@ -76,8 +75,8 @@ export default function ReportIssuePage() {
   const [selectedLabType, setSelectedLabType] = useState('');
   const [customLabType, setCustomLabType] = useState('');
   const [yearSemester, setYearSemester] = useState('');
-  const [selectedBuilding, setSelectedBuilding] = useState('');
-  const [selectedRoom, setSelectedRoom] = useState('');
+  const [buildingName, setBuildingName] = useState('');
+  const [roomName, setRoomName] = useState('');
   const [deviceType, setDeviceType] = useState('');
   const [deviceNumber, setDeviceNumber] = useState('');
   const [numberNotVisible, setNumberNotVisible] = useState(false);
@@ -92,19 +91,15 @@ export default function ReportIssuePage() {
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState(null);
 
-  // Fetch departments and buildings on mount
+  // Fetch departments on mount
   useEffect(() => {
     async function loadReferenceData() {
       try {
         setLoadingRefData(true);
-        const [deptsData, bldgsData] = await Promise.all([
-          getDepartments(),
-          getBuildings(),
-        ]);
+        const deptsData = await getDepartments();
         setDepartments(deptsData || []);
-        setBuildings(bldgsData || []);
       } catch (err) {
-        setSubmitError('Failed to load campus locations. Please refresh the page.');
+        setSubmitError('Failed to load campus departments. Please refresh the page.');
       } finally {
         setLoadingRefData(false);
       }
@@ -119,12 +114,6 @@ export default function ReportIssuePage() {
         ...currentDeptObj.streams.map((s) => ({ value: s.name, label: s.name })),
         { value: 'OTHER_STREAM', label: 'Other Specialization (Specify Manually)' },
       ]
-    : [];
-
-  // Compute cascading rooms based on selected building
-  const currentBldgObj = buildings.find((b) => b.id === selectedBuilding);
-  const availableRooms = currentBldgObj
-    ? currentBldgObj.rooms.map((r) => ({ value: r.id, label: `Room ${r.name}` }))
     : [];
 
   // Photo selection handler
@@ -203,11 +192,11 @@ export default function ReportIssuePage() {
       newErrors.customLabType = 'Please specify the lab type.';
     }
 
-    if (!selectedBuilding) {
-      newErrors.building = 'Please select the building location.';
+    if (!buildingName.trim()) {
+      newErrors.buildingName = 'Building name or block number is required.';
     }
-    if (!selectedRoom) {
-      newErrors.room = 'Please select the room number.';
+    if (!roomName.trim()) {
+      newErrors.roomName = 'Room number or lab identifier is required.';
     }
     if (!deviceType) {
       newErrors.deviceType = 'Please select the device type.';
@@ -252,8 +241,8 @@ export default function ReportIssuePage() {
       formData.append('stream', finalStream);
       if (finalLabType) formData.append('labType', finalLabType);
       if (yearSemester) formData.append('yearSemester', yearSemester);
-      formData.append('buildingId', selectedBuilding);
-      formData.append('roomId', selectedRoom);
+      formData.append('buildingName', buildingName.trim());
+      formData.append('roomName', roomName.trim());
       formData.append('deviceType', deviceType);
       formData.append('deviceNumberVisible', (!numberNotVisible).toString());
       if (!numberNotVisible && deviceNumber.trim()) {
@@ -604,40 +593,27 @@ export default function ReportIssuePage() {
 
             {/* Section 3: Campus Location */}
             <div>
-              <h2 className="text-base font-headline font-bold text-on-surface mb-4">Location</h2>
+              <h2 className="text-base font-headline font-bold text-on-surface mb-4">Campus Location</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Select
-                  label="Building"
-                  id="building"
-                  name="building"
-                  placeholder={loadingRefData ? 'Loading buildings...' : 'Select Building'}
-                  options={buildings.map((b) => ({ value: b.id, label: b.name }))}
-                  value={selectedBuilding}
-                  onChange={(e) => {
-                    setSelectedBuilding(e.target.value);
-                    setSelectedRoom(''); // Reset room when building changes
-                  }}
-                  error={errors.building}
-                  disabled={loadingRefData}
+                <Input
+                  label="Building Name / Block / Number"
+                  id="buildingName"
+                  name="buildingName"
+                  placeholder="e.g. Block A, Tech Park, Main Building, Academic Block 2"
+                  value={buildingName}
+                  onChange={(e) => setBuildingName(e.target.value)}
+                  error={errors.buildingName}
                   required
                 />
 
-                <Select
-                  label="Room Number"
-                  id="room"
-                  name="room"
-                  placeholder={
-                    !selectedBuilding
-                      ? 'Select Building First'
-                      : availableRooms.length === 0
-                      ? 'No rooms configured'
-                      : 'Select Room'
-                  }
-                  options={availableRooms}
-                  value={selectedRoom}
-                  onChange={(e) => setSelectedRoom(e.target.value)}
-                  error={errors.room}
-                  disabled={!selectedBuilding || availableRooms.length === 0}
+                <Input
+                  label="Room Number / Lab Identifier"
+                  id="roomName"
+                  name="roomName"
+                  placeholder="e.g. Lab 102, Room 305, Workshop 1, Ground Floor Lab"
+                  value={roomName}
+                  onChange={(e) => setRoomName(e.target.value)}
+                  error={errors.roomName}
                   required
                 />
               </div>

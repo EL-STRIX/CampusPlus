@@ -20,8 +20,10 @@ model Report {
   deviceNumber         String?      @map("device_number")
   deviceNumberVisible  Boolean      @map("device_number_visible")
   labType              String?      @map("lab_type")
-  buildingId           String       @map("building_id")
-  roomId               String       @map("room_id")
+  buildingName         String?      @default("Main Campus") @map("building_name")
+  roomName             String?      @default("General Room") @map("room_name")
+  buildingId           String?      @map("building_id")
+  roomId               String?      @map("room_id")
   photoUrl             String       @map("photo_url")
   reportCount          Int          @default(1) @map("report_count")
   possibleDuplicate    Boolean      @default(false) @map("possible_duplicate")
@@ -33,12 +35,12 @@ model Report {
   updatedAt            DateTime     @updatedAt @map("updated_at")
   resolvedAt           DateTime?    @map("resolved_at")
 
-  building      Building              @relation(fields: [buildingId], references: [id])
-  room          Room                  @relation(fields: [roomId], references: [id])
+  building      Building?             @relation(fields: [buildingId], references: [id])
+  room          Room?                 @relation(fields: [roomId], references: [id])
   reporters     ReportReporter[]
   statusHistory ReportStatusHistory[]
 
-  @@index([roomId, deviceNumber])
+  @@index([roomName, deviceNumber])
   @@index([status])
   @@index([reportCount])
   @@map("reports")

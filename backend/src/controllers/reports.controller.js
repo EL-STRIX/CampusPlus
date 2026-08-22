@@ -17,17 +17,30 @@ async function submitReport(req, res, next) {
       throw new AppError('Device photo is mandatory for fault reporting.', 400, 'VALIDATION_ERROR');
     }
 
-    // Verify building and room exist
-    const room = await prisma.room.findFirst({
-      where: {
-        id: req.body.roomId,
-        buildingId: req.body.buildingId,
-      },
-    });
+    let buildingName = (req.body.buildingName || req.body.building || '').trim();
+    let roomName = (req.body.roomName || req.body.room || '').trim();
+    let buildingId = req.body.buildingId || null;
+    let roomId = req.body.roomId || null;
 
-    if (!room) {
-      throw new AppError('Selected room does not exist in the selected building.', 400, 'VALIDATION_ERROR');
+    if (roomId && buildingId) {
+      const room = await prisma.room.findFirst({
+        where: {
+          id: roomId,
+          buildingId,
+        },
+        include: { building: true },
+      });
+
+      if (!room) {
+        throw new AppError('Selected room does not exist in the selected building.', 400, 'VALIDATION_ERROR');
+      }
+
+      if (!roomName) roomName = room.name;
+      if (!buildingName) buildingName = room.building.name;
     }
+
+    if (!buildingName) buildingName = 'Campus Building';
+    if (!roomName) roomName = 'Room';
 
     // Validate photo
     validateFile(req.file);
@@ -43,8 +56,10 @@ async function submitReport(req, res, next) {
       stream: req.body.stream,
       labType: req.body.labType || null,
       yearSemester: req.body.yearSemester || null,
-      buildingId: req.body.buildingId,
-      roomId: req.body.roomId,
+      buildingName,
+      roomName,
+      buildingId,
+      roomId,
       deviceType: req.body.deviceType,
       deviceNumber: req.body.deviceNumber || null,
       deviceNumberVisible: req.body.deviceNumberVisible,

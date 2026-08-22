@@ -33,12 +33,12 @@ const createReportSchema = z
       .min(1, 'Stream is required'),
     labType: z.string().trim().max(100).optional().nullable(),
     yearSemester: z.string().trim().max(30).optional().nullable(),
-    buildingId: z
-      .string({ required_error: 'Building ID is required' })
-      .uuid('Invalid building ID format'),
-    roomId: z
-      .string({ required_error: 'Room ID is required' })
-      .uuid('Invalid room ID format'),
+    buildingName: z.string().trim().min(1, 'Building is required').optional().nullable(),
+    building: z.string().trim().min(1, 'Building is required').optional().nullable(),
+    buildingId: z.string().trim().optional().nullable(),
+    roomName: z.string().trim().min(1, 'Room is required').optional().nullable(),
+    room: z.string().trim().min(1, 'Room is required').optional().nullable(),
+    roomId: z.string().trim().optional().nullable(),
     deviceType: z.enum(DEVICE_TYPES, {
       errorMap: () => ({
         message: `Device type must be one of: ${DEVICE_TYPES.join(', ')}`,
@@ -59,6 +59,32 @@ const createReportSchema = z
       .optional()
       .nullable(),
   })
+  .refine(
+    (data) => {
+      return Boolean(
+        (data.buildingName && data.buildingName.trim().length > 0) ||
+        (data.building && data.building.trim().length > 0) ||
+        (data.buildingId && data.buildingId.trim().length > 0)
+      );
+    },
+    {
+      message: 'Building name or number is required',
+      path: ['buildingName'],
+    }
+  )
+  .refine(
+    (data) => {
+      return Boolean(
+        (data.roomName && data.roomName.trim().length > 0) ||
+        (data.room && data.room.trim().length > 0) ||
+        (data.roomId && data.roomId.trim().length > 0)
+      );
+    },
+    {
+      message: 'Room number or identifier is required',
+      path: ['roomName'],
+    }
+  )
   .refine(
     (data) => {
       // If deviceNumberVisible is true, deviceNumber is required and cannot be empty

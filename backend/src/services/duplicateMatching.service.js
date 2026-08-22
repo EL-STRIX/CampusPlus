@@ -29,6 +29,8 @@ async function processReportSubmission(payload, prismaClient = defaultPrisma) {
     stream,
     labType,
     yearSemester,
+    buildingName: rawBuildingName,
+    roomName: rawRoomName,
     buildingId,
     roomId,
     deviceType,
@@ -38,6 +40,8 @@ async function processReportSubmission(payload, prismaClient = defaultPrisma) {
     additionalNotes,
   } = payload;
 
+  const buildingName = (rawBuildingName || 'Main Building').trim();
+  const roomName = (rawRoomName || 'General Room').trim();
   const isVisible = Boolean(deviceNumberVisible);
   const cleanDeviceNumber = isVisible && deviceNumber ? deviceNumber.trim() : null;
 
@@ -49,7 +53,7 @@ async function processReportSubmission(payload, prismaClient = defaultPrisma) {
       // Find active (open or in_progress) matching report
       const existingReport = await tx.report.findFirst({
         where: {
-          roomId,
+          roomName: { equals: roomName, mode: 'insensitive' },
           deviceNumber: cleanDeviceNumber,
           status: {
             in: ['open', 'in_progress'],
@@ -97,8 +101,10 @@ async function processReportSubmission(payload, prismaClient = defaultPrisma) {
           deviceNumber: cleanDeviceNumber,
           deviceNumberVisible: true,
           labType: labType || null,
-          buildingId,
-          roomId,
+          buildingName,
+          roomName,
+          buildingId: buildingId || null,
+          roomId: roomId || null,
           photoUrl,
           reportCount: 1,
           possibleDuplicate: false,
@@ -135,7 +141,7 @@ async function processReportSubmission(payload, prismaClient = defaultPrisma) {
     // -------------------------------------------------------------
     const candidateMatches = await tx.report.findMany({
       where: {
-        roomId,
+        roomName: { equals: roomName, mode: 'insensitive' },
         deviceType,
         status: {
           in: ['open', 'in_progress'],
@@ -154,8 +160,10 @@ async function processReportSubmission(payload, prismaClient = defaultPrisma) {
         deviceNumber: null,
         deviceNumberVisible: false,
         labType: labType || null,
-        buildingId,
-        roomId,
+        buildingName,
+        roomName,
+        buildingId: buildingId || null,
+        roomId: roomId || null,
         photoUrl,
         reportCount: 1,
         possibleDuplicate: true,
