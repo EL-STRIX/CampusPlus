@@ -124,24 +124,54 @@ async function trackReport(req, res, next) {
       throw new AppError('Ticket / Report ID is required.', 400, 'VALIDATION_ERROR');
     }
 
-    const cleanId = id.trim();
+    // Clean input: remove common prefixes like "Ticket ID:", "ID:", "#", quotes, whitespace
+    const cleanId = id
+      .trim()
+      .replace(/^(ticket\s*id|report\s*id|id)\s*[:#-]?\s*/i, '')
+      .replace(/^["'`#]+|["'`]+$/g, '')
+      .trim();
 
-    const report = await prisma.report.findUnique({
-      where: { id: cleanId },
-      include: {
-        building: { select: { id: true, name: true } },
-        room: { select: { id: true, name: true } },
-        statusHistory: {
-          orderBy: { changedAt: 'asc' },
-          include: {
-            admin: { select: { username: true } },
-          },
+    if (!cleanId) {
+      throw new AppError('A valid Ticket ID is required.', 400, 'VALIDATION_ERROR');
+    }
+
+    const includeRelations = {
+      building: { select: { id: true, name: true } },
+      room: { select: { id: true, name: true } },
+      statusHistory: {
+        orderBy: { changedAt: 'asc' },
+        include: {
+          admin: { select: { username: true } },
         },
       },
+    };
+
+    // 1. Try exact match by ID
+    let report = await prisma.report.findUnique({
+      where: { id: cleanId },
+      include: includeRelations,
     });
 
+    // 2. Try case-insensitive, prefix, or device tag match if exact match wasn't found
     if (!report) {
-      throw new AppError(`Report ticket "${cleanId}" was not found. Please check your Ticket ID and try again.`, 404, 'NOT_FOUND');
+      report = await prisma.report.findFirst({
+        where: {
+          OR: [
+            { id: { equals: cleanId, mode: 'insensitive' } },
+            { id: { startsWith: cleanId, mode: 'insensitive' } },
+            { deviceNumber: { equals: cleanId, mode: 'insensitive' } },
+          ],
+        },
+        include: includeRelations,
+      });
+    }
+
+    if (!report) {
+      throw new AppError(
+        `Report ticket "${cleanId}" was not found. Please check your Ticket ID and try again.`,
+        404,
+        'NOT_FOUND'
+      );
     }
 
     // If report was merged into another ticket, fetch basic target ticket info

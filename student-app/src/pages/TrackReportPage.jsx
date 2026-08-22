@@ -82,7 +82,14 @@ export default function TrackReportPage() {
   const handleFetchReport = useCallback(async (ticketId) => {
     if (!ticketId || !ticketId.trim()) return;
 
-    const cleanId = ticketId.trim();
+    const cleanId = ticketId
+      .trim()
+      .replace(/^(ticket\s*id|report\s*id|id)\s*[:#-]?\s*/i, '')
+      .replace(/^["'`#]+|["'`]+$/g, '')
+      .trim();
+
+    if (!cleanId) return;
+
     setLoading(true);
     setError(null);
 
