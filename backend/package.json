@@ -9,7 +9,7 @@
     "start": "node src/server.js",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "test": "jest --runInBand",
+    "test": "jest --runInBand && node prisma/seedReports.js",
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
     "seed:dev": "node src/db/seeds/dev.seed.js",
