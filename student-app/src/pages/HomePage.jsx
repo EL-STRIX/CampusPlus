@@ -8,7 +8,7 @@ export default function HomePage() {
       {/* Hero Section with Visual Gradient & Tech Teal Overlay */}
       <section className="relative w-full min-h-[560px] md:min-h-[620px] flex items-center justify-center overflow-hidden bg-primary">
         <div
-          className="absolute inset-0 z-0 bg-cover bg-center opacity-40"
+          className="absolute inset-0 z-0 bg-cover bg-center opacity-60"
           style={{
             backgroundImage:
               "url('https://www.brainwareuniversity.ac.in/BWUNL/February2023/1st.jpg')",
@@ -87,7 +87,7 @@ export default function HomePage() {
         <div className="max-w-container-max mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="rounded-2xl overflow-hidden shadow-card border border-outline-variant/30 h-[360px] relative">
             <img
-              src="https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&w=1200&q=80"
+              src="https://www.brainwareuniversity.ac.in/assets/img/bwu-students-robotics-engineering.webp"
               alt="Engineering College Computer Hardware Lab Fault Diagnosis"
               className="w-full h-full object-cover"
             />
