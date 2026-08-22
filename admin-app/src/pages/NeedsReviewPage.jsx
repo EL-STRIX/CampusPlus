@@ -17,6 +17,7 @@ export default function NeedsReviewPage() {
   const [selectedTargetId, setSelectedTargetId] = useState('');
   const [processingAction, setProcessingAction] = useState(false);
   const [previewPhoto, setPreviewPhoto] = useState(null);
+  const [detailModalReport, setDetailModalReport] = useState(null);
 
   const apiBase = import.meta.env.VITE_API_BASE_URL
     ? import.meta.env.VITE_API_BASE_URL.replace('/api/v1', '')
@@ -207,7 +208,14 @@ export default function NeedsReviewPage() {
                     )}
                   </div>
 
-                  <div className="pt-4 mt-4 border-t border-outline-variant/20 flex justify-end">
+                  <div className="pt-4 mt-4 border-t border-outline-variant/20 flex items-center justify-between gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDetailModalReport(report)}
+                    >
+                      View Details
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -267,12 +275,13 @@ export default function NeedsReviewPage() {
                             </div>
 
                             <div className="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/20">
-                              <Link
-                                to={`/reports/${candidate.id}`}
-                                className="px-3 py-1.5 rounded-lg border border-outline-variant/50 hover:bg-surface-container text-xs font-headline font-semibold text-on-surface transition-colors"
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setDetailModalReport(candidate)}
                               >
-                                View Master Ticket
-                              </Link>
+                                View Details
+                              </Button>
                               <Button
                                 variant="primary"
                                 size="sm"
@@ -337,6 +346,130 @@ export default function NeedsReviewPage() {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Detailed Report Inspector Modal */}
+      <Modal
+        isOpen={Boolean(detailModalReport)}
+        onClose={() => setDetailModalReport(null)}
+        title={detailModalReport ? `Ticket Details: ${detailModalReport.deviceType?.replace('_', ' ')}` : 'Ticket Details'}
+        maxWidth="max-w-2xl"
+      >
+        {detailModalReport && (
+          <div className="space-y-5 text-xs font-sans">
+            {/* Header / Summary */}
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between pb-4 border-b border-outline-variant/20">
+              <div className="flex items-center gap-3">
+                <div
+                  onClick={() => setPreviewPhoto(getFullImageUrl(detailModalReport.photoUrl))}
+                  className="w-14 h-14 rounded-lg bg-surface-container overflow-hidden border border-outline-variant/30 cursor-zoom-in flex-shrink-0"
+                >
+                  <img
+                    src={getFullImageUrl(detailModalReport.photoUrl)}
+                    alt="Evidence"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h4 className="font-headline font-bold text-sm text-on-surface capitalize">
+                    {detailModalReport.deviceType?.replace('_', ' ')}
+                  </h4>
+                  <span className="font-mono text-[11px] text-on-surface-variant">
+                    Asset Tag: {detailModalReport.deviceNumber || 'N/A (Missing)'}
+                  </span>
+                </div>
+              </div>
+              <Badge status={detailModalReport.status || 'open'} />
+            </div>
+
+            {/* Location & Context Grid */}
+            <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/30">
+              <div>
+                <span className="text-[10px] font-headline font-bold uppercase tracking-wider text-on-surface-variant block">
+                  Campus Location
+                </span>
+                <span className="font-medium text-on-surface mt-0.5 block">
+                  {detailModalReport.buildingName} — Room {detailModalReport.roomName}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] font-headline font-bold uppercase tracking-wider text-on-surface-variant block">
+                  Laboratory Domain
+                </span>
+                <span className="font-medium text-on-surface mt-0.5 block truncate">
+                  {detailModalReport.labType || 'General Lab'}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] font-headline font-bold uppercase tracking-wider text-on-surface-variant block">
+                  Total Complaints Filed
+                </span>
+                <span className="font-semibold text-primary mt-0.5 block">
+                  {detailModalReport.reportCount || 1} Student Submission{detailModalReport.reportCount === 1 ? '' : 's'}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] font-headline font-bold uppercase tracking-wider text-on-surface-variant block">
+                  Logged At
+                </span>
+                <span className="font-medium text-on-surface mt-0.5 block">
+                  {detailModalReport.createdAt ? new Date(detailModalReport.createdAt).toLocaleDateString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  }) : 'Recently'}
+                </span>
+              </div>
+            </div>
+
+            {/* Reporter Information & Student Notes */}
+            {detailModalReport.reporters && detailModalReport.reporters.length > 0 && (
+              <div className="space-y-3">
+                <span className="text-[11px] font-headline font-bold uppercase tracking-wider text-on-surface block">
+                  Attached Student Submissions ({detailModalReport.reporters.length})
+                </span>
+                <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+                  {detailModalReport.reporters.map((rep, idx) => (
+                    <div key={rep.id || idx} className="p-3 rounded-lg bg-surface-container-lowest border border-outline-variant/30 space-y-1.5">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="font-headline font-bold text-on-surface">
+                          Student {rep.studentCode}
+                        </span>
+                        <span className="text-on-surface-variant">
+                          {rep.department} {rep.yearSemester ? `· ${rep.yearSemester}` : ''}
+                        </span>
+                      </div>
+                      {rep.notes && (
+                        <p className="text-xs italic text-on-surface bg-surface-container-low p-2 rounded border border-outline-variant/20">
+                          &quot;{rep.notes}&quot;
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Footer Action Link */}
+            <div className="flex justify-between items-center pt-3 border-t border-outline-variant/20">
+              <Link
+                to={`/reports/${detailModalReport.id}`}
+                target="_blank"
+                className="text-xs font-headline font-semibold text-primary hover:underline flex items-center gap-1"
+              >
+                Open Full Dedicated Ticket Page ↗
+              </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDetailModalReport(null)}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* Photo Preview Modal */}
