@@ -82,56 +82,67 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      {/* 2-Column Responsive Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Account Overview (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* Profile Overview Card */}
-          <Card title="Account Overview" subtitle="Logged in administrator details">
-            <div className="flex items-center gap-4 pb-5 border-b border-outline-variant/20">
-              <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center font-headline font-bold text-xl flex-shrink-0">
-                {user?.username?.charAt(0).toUpperCase() || 'A'}
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-headline font-bold text-base text-on-surface capitalize truncate">
-                  {user?.username || 'admin'}
-                </h3>
-                <p className="text-xs font-sans text-on-surface-variant mt-0.5">
-                  Facilities Administrator
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-4 divide-y divide-outline-variant/20 text-xs font-sans">
-              <div className="py-3 flex justify-between items-center">
-                <span className="text-on-surface-variant font-medium">Username</span>
-                <span className="font-mono font-semibold text-on-surface">@{user?.username || 'admin'}</span>
-              </div>
-
-              <div className="py-3 flex justify-between items-center">
-                <span className="text-on-surface-variant font-medium">Department</span>
-                <span className="font-medium text-on-surface">Campus Facilities & Labs</span>
+      {/* 2 Equal Columns Grid (50% - 50%) with Matching Height */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+        {/* Left Column: Account Overview */}
+        <div className="h-full">
+          <Card
+            title="Account Overview"
+            subtitle="Logged in administrator details"
+            className="h-full flex flex-col"
+            bodyClassName="flex-1 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center gap-4 pb-5 border-b border-outline-variant/20">
+                <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center font-headline font-bold text-xl flex-shrink-0">
+                  {user?.username?.charAt(0).toUpperCase() || 'A'}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-headline font-bold text-base text-on-surface capitalize truncate">
+                    {user?.username || 'admin'}
+                  </h3>
+                  <p className="text-xs font-sans text-on-surface-variant mt-0.5">
+                    Facilities Administrator
+                  </p>
+                </div>
               </div>
 
-              <div className="py-3 flex justify-between items-center">
-                <span className="text-on-surface-variant font-medium">Access Scope</span>
-                <span className="font-medium text-on-surface">All Lab Equipment Reports</span>
-              </div>
+              <div className="pt-4 divide-y divide-outline-variant/20 text-xs font-sans">
+                <div className="py-3.5 flex justify-between items-center">
+                  <span className="text-on-surface-variant font-medium">Username</span>
+                  <span className="font-mono font-semibold text-on-surface">@{user?.username || 'admin'}</span>
+                </div>
 
-              <div className="py-3 flex justify-between items-center">
-                <span className="text-on-surface-variant font-medium">Status</span>
-                <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                  Active Session
-                </span>
+                <div className="py-3.5 flex justify-between items-center">
+                  <span className="text-on-surface-variant font-medium">Department</span>
+                  <span className="font-medium text-on-surface">Campus Facilities & Labs</span>
+                </div>
+
+                <div className="py-3.5 flex justify-between items-center">
+                  <span className="text-on-surface-variant font-medium">Access Scope</span>
+                  <span className="font-medium text-on-surface">All Lab Equipment Reports</span>
+                </div>
+
+                <div className="py-3.5 flex justify-between items-center">
+                  <span className="text-on-surface-variant font-medium">Status</span>
+                  <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                    Active Session
+                  </span>
+                </div>
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Right Column: Change Password (7 cols) */}
-        <div className="lg:col-span-7">
-          <Card title="Change Password" subtitle="Enforce account security with regular password updates">
+        {/* Right Column: Change Password */}
+        <div className="h-full">
+          <Card
+            title="Change Password"
+            subtitle="Enforce account security with regular password updates"
+            className="h-full flex flex-col"
+            bodyClassName="flex-1 flex flex-col justify-between"
+          >
             {successMsg && (
               <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-status-resolved/30 text-status-resolved text-xs font-medium flex items-center justify-between animate-fadeIn">
                 <span>{successMsg}</span>
