@@ -125,9 +125,6 @@ export default function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }
                 <span className="font-headline font-bold text-xs text-on-surface block truncate">
                   {user?.username || 'Administrator'}
                 </span>
-                <span className="font-sans text-[11px] text-on-surface-variant block truncate">
-                  Maintenance Staff
-                </span>
               </div>
             </div>
             <button
