@@ -354,16 +354,21 @@ When the database is initialized using the seed script, the following default ad
 
 ## 📚 Technical Documentation
 
-For in-depth architectural diagrams, database entity relationship schemas, and design guidelines, consult the `docs/` directory:
+For in-depth architectural diagrams, database entity relationship schemas, API schemas, and deployment runbooks, consult the repository documentation:
 
-- [`docs/PRD.md`](docs/PRD.md) — Product Requirements & User Stories
-- [`docs/TRD.md`](docs/TRD.md) — Technical Specifications & API Contracts
-- [`docs/architecture.md`](docs/architecture.md) — System Design, Security & Scalability
-- [`docs/design.md`](docs/design.md) — UI Component Tokens & Color Guidelines
-- [`docs/phases.md`](docs/phases.md) — Phased Implementation & Validation Tracker
+- [`docs/API.md`](docs/API.md) — **REST API Specification** & cURL Request/Response Manual
+- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — **Production Deployment Runbook** (Docker, Cloud, VPS, Nginx, PM2)
+- [`docs/PRD.md`](docs/PRD.md) — **Product Requirements Document** & User Stories
+- [`docs/TRD.md`](docs/TRD.md) — **Technical Requirements Document** & Validation Schemas
+- [`docs/architecture.md`](docs/architecture.md) — **System Architecture**, Security & Database ERD
+- [`docs/design.md`](docs/design.md) — **Design System**, Tokens & UI Guidelines
+- [`docs/phases.md`](docs/phases.md) — **Implementation & Verification Tracker**
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — **Contribution Guidelines** & Git Workflow
+- [`SECURITY.md`](SECURITY.md) — **Security Policy** & Vulnerability Disclosure Process
 
 ---
 
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
+
