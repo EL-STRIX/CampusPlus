@@ -115,15 +115,6 @@ export default function ProfilePage() {
 
               <div>
                 <span className="text-[11px] font-headline font-bold uppercase tracking-wider text-on-surface-variant block mb-1">
-                  Official Email
-                </span>
-                <span className="text-on-surface bg-surface-container-low px-3 py-2 rounded-lg border border-outline-variant/30 block">
-                  admin@campusplus.internal
-                </span>
-              </div>
-
-              <div>
-                <span className="text-[11px] font-headline font-bold uppercase tracking-wider text-on-surface-variant block mb-1">
                   Department
                 </span>
                 <span className="text-on-surface bg-surface-container-low px-3 py-2 rounded-lg border border-outline-variant/30 block">
@@ -137,6 +128,16 @@ export default function ProfilePage() {
                 </span>
                 <span className="text-on-surface bg-surface-container-low px-3 py-2 rounded-lg border border-outline-variant/30 block">
                   Full System Access (Reports & Maintenance)
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[11px] font-headline font-bold uppercase tracking-wider text-on-surface-variant block mb-1">
+                  Account Status
+                </span>
+                <span className="text-on-surface bg-surface-container-low px-3 py-2 rounded-lg border border-outline-variant/30 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  Active / Operational
                 </span>
               </div>
             </div>
