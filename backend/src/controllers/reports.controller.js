@@ -112,7 +112,92 @@ async function uploadPhoto(req, res, next) {
   }
 }
 
+/**
+ * Controller: Track / Get Report by ID (Public)
+ * GET /api/v1/reports/track/:id
+ */
+async function trackReport(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    if (!id || typeof id !== 'string' || !id.trim()) {
+      throw new AppError('Ticket / Report ID is required.', 400, 'VALIDATION_ERROR');
+    }
+
+    const cleanId = id.trim();
+
+    const report = await prisma.report.findUnique({
+      where: { id: cleanId },
+      include: {
+        building: { select: { id: true, name: true } },
+        room: { select: { id: true, name: true } },
+        statusHistory: {
+          orderBy: { changedAt: 'asc' },
+          include: {
+            admin: { select: { username: true } },
+          },
+        },
+      },
+    });
+
+    if (!report) {
+      throw new AppError(`Report ticket "${cleanId}" was not found. Please check your Ticket ID and try again.`, 404, 'NOT_FOUND');
+    }
+
+    // If report was merged into another ticket, fetch basic target ticket info
+    let mergedIntoReport = null;
+    if (report.mergedInto) {
+      mergedIntoReport = await prisma.report.findUnique({
+        where: { id: report.mergedInto },
+        select: {
+          id: true,
+          status: true,
+          deviceType: true,
+          roomName: true,
+          buildingName: true,
+        },
+      });
+    }
+
+    const formatted = {
+      id: report.id,
+      deviceType: report.deviceType,
+      deviceNumber: report.deviceNumber,
+      deviceNumberVisible: report.deviceNumberVisible,
+      labType: report.labType,
+      photoUrl: report.photoUrl,
+      buildingId: report.buildingId,
+      buildingName: report.buildingName || (report.building ? report.building.name : 'Campus Building'),
+      roomId: report.roomId,
+      roomName: report.roomName || (report.room ? report.room.name : 'Campus Room'),
+      reportCount: report.reportCount,
+      status: report.status,
+      rejectionReason: report.rejectionReason,
+      mergedInto: report.mergedInto,
+      mergedIntoReport,
+      createdAt: report.createdAt,
+      updatedAt: report.updatedAt,
+      resolvedAt: report.resolvedAt,
+      statusHistory: report.statusHistory.map((h) => ({
+        id: h.id,
+        status: h.status,
+        changedAt: h.changedAt,
+        changedBy: 'Facilities Maintenance Staff',
+      })),
+    };
+
+    res.status(200).json({
+      success: true,
+      data: formatted,
+      error: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   submitReport,
   uploadPhoto,
+  trackReport,
 };

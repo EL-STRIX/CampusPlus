@@ -46,6 +46,16 @@ export default function Header() {
           >
             Report Issue
           </Link>
+          <Link
+            to="/track"
+            className={`text-sm font-headline transition-colors pb-1 ${
+              location.pathname.startsWith('/track')
+                ? 'text-primary font-bold border-b-2 border-primary'
+                : 'text-on-surface-variant font-medium hover:text-primary'
+            }`}
+          >
+            Track Report
+          </Link>
         </nav>
 
         {/* CTA Button */}
@@ -96,6 +106,17 @@ export default function Header() {
             }`}
           >
             Report Issue
+          </Link>
+          <Link
+            to="/track"
+            onClick={() => setMobileMenuOpen(false)}
+            className={`px-3 py-2 rounded-lg font-headline text-sm ${
+              location.pathname.startsWith('/track')
+                ? 'bg-primary/10 text-primary font-bold'
+                : 'text-on-surface hover:bg-surface-container'
+            }`}
+          >
+            Track Report
           </Link>
           <div className="pt-2">
             <Link to="/report" onClick={() => setMobileMenuOpen(false)} className="w-full block">

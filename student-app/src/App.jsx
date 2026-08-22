@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import ReportIssuePage from './pages/ReportIssuePage';
 import ConfirmationPage from './pages/ConfirmationPage';
+import TrackReportPage from './pages/TrackReportPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsPage from './pages/TermsPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -20,6 +21,8 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/report" element={<ReportIssuePage />} />
             <Route path="/confirmation" element={<ConfirmationPage />} />
+            <Route path="/track" element={<TrackReportPage />} />
+            <Route path="/track/:id" element={<TrackReportPage />} />
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="*" element={<NotFoundPage />} />

@@ -153,4 +153,46 @@ describe('Public API Endpoints', () => {
     await prisma.reportReporter.deleteMany({ where: { reportId: res.body.data.reportId } });
     await prisma.report.delete({ where: { id: res.body.data.reportId } });
   });
+
+  test('GET /api/v1/reports/track/:id returns 200 with report tracking details', async () => {
+    // 1. Create a test report
+    const createRes = await request(app)
+      .post('/api/v1/reports')
+      .field('studentCode', '22CSE999')
+      .field('department', testDeptName)
+      .field('stream', testStreamName)
+      .field('buildingId', testBuildingId)
+      .field('roomId', testRoomId)
+      .field('deviceType', 'monitor')
+      .field('deviceNumber', 'MON-TRACK-01')
+      .field('deviceNumberVisible', 'true')
+      .attach('photo', tempTestImagePath);
+
+    expect(createRes.status).toBe(201);
+    const reportId = createRes.body.data.reportId;
+
+    // 2. Track report by ID
+    const trackRes = await request(app).get(`/api/v1/reports/track/${reportId}`);
+
+    expect(trackRes.status).toBe(200);
+    expect(trackRes.body.success).toBe(true);
+    expect(trackRes.body.data.id).toBe(reportId);
+    expect(trackRes.body.data.deviceType).toBe('monitor');
+    expect(trackRes.body.data.deviceNumber).toBe('MON-TRACK-01');
+    expect(trackRes.body.data.status).toBe('open');
+    expect(trackRes.body.data.reportCount).toBe(1);
+    expect(Array.isArray(trackRes.body.data.statusHistory)).toBe(true);
+
+    // Clean up
+    await prisma.reportReporter.deleteMany({ where: { reportId } });
+    await prisma.report.delete({ where: { id: reportId } });
+  });
+
+  test('GET /api/v1/reports/track/:id with non-existent ID returns 404', async () => {
+    const res = await request(app).get('/api/v1/reports/track/non-existent-report-uuid');
+
+    expect(res.status).toBe(404);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error.code).toBe('NOT_FOUND');
+  });
 });

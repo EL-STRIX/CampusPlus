@@ -28,3 +28,14 @@ export async function submitFaultReport(formData) {
   });
   return res.data;
 }
+
+/**
+ * Tracks the live status of a submitted report by Ticket ID.
+ * @param {string} reportId
+ */
+export async function trackReport(reportId) {
+  const cleanId = String(reportId || '').trim();
+  const res = await apiClient.get(`/reports/track/${encodeURIComponent(cleanId)}`);
+  return res.data;
+}
+

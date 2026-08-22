@@ -30,6 +30,9 @@ export default function Footer() {
           <Link to="/report" className="text-on-surface-variant hover:text-primary transition-colors">
             Report Issue
           </Link>
+          <Link to="/track" className="text-on-surface-variant hover:text-primary transition-colors">
+            Track Report
+          </Link>
           <span className="text-outline/50">•</span>
           <Link
             to="/privacy"
