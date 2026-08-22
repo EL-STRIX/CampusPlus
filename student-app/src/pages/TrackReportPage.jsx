@@ -17,7 +17,6 @@ export default function TrackReportPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
   const [previewPhoto, setPreviewPhoto] = useState(false);
   const [recentTickets, setRecentTickets] = useState([]);
 
@@ -137,12 +136,6 @@ export default function TrackReportPage() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
-  };
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
   };
 
   const formatDate = (dateStr) => {
@@ -586,10 +579,10 @@ export default function TrackReportPage() {
             )}
           </Card>
 
-          {/* 2-Column Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            {/* Left Column: Equipment & Location Details */}
-            <div className="md:col-span-7 space-y-6">
+          {/* Main Details & Photo Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            {/* Left Column: Equipment & Location Details + Audit Log */}
+            <div className={report.photoUrl ? 'md:col-span-7 space-y-6' : 'md:col-span-12 space-y-6'}>
               <Card className="bg-surface-container-lowest border border-outline-variant/30 p-6 sm:p-7 rounded-3xl shadow-card">
                 <h2 className="text-base font-headline font-bold text-on-surface mb-5 flex items-center gap-2">
                   <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -707,10 +700,9 @@ export default function TrackReportPage() {
               )}
             </div>
 
-            {/* Right Column: Photo Evidence & Quick Actions */}
-            <div className="md:col-span-5 space-y-6">
-              {/* Photo Evidence Card */}
-              {report.photoUrl && (
+            {/* Right Column: Photo Evidence (if uploaded) */}
+            {report.photoUrl && (
+              <div className="md:col-span-5 space-y-6">
                 <Card className="bg-surface-container-lowest border border-outline-variant/30 p-6 rounded-3xl shadow-card flex flex-col">
                   <h3 className="text-base font-headline font-bold text-on-surface mb-3 flex items-center gap-2">
                     <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -738,52 +730,8 @@ export default function TrackReportPage() {
                     </div>
                   </div>
                 </Card>
-              )}
-
-              {/* Quick Actions Card */}
-              <Card className="bg-surface-container-lowest border border-outline-variant/30 p-6 rounded-3xl shadow-card flex flex-col gap-3">
-                <h3 className="text-base font-headline font-bold text-on-surface mb-1">
-                  Actions
-                </h3>
-
-                <button
-                  type="button"
-                  onClick={handleCopyLink}
-                  className="w-full py-2.5 px-4 rounded-xl border border-outline-variant/40 hover:border-primary text-xs font-headline font-semibold text-on-surface hover:bg-surface-container transition-colors flex items-center justify-center gap-2"
-                >
-                  {copiedLink ? (
-                    <span className="text-status-resolved flex items-center gap-1 font-bold">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      Link Copied to Clipboard!
-                    </span>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4 text-outline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                      </svg>
-                      <span>Share / Copy Tracking Link</span>
-                    </>
-                  )}
-                </button>
-
-                <Link to="/report" className="w-full block">
-                  <Button variant="outline" size="md" className="w-full">
-                    Report Another Issue
-                  </Button>
-                </Link>
-
-                <Link to="/" className="w-full block">
-                  <button
-                    type="button"
-                    className="w-full py-2 text-xs font-sans text-outline hover:text-primary transition-colors text-center"
-                  >
-                    Return to CampusPlus Home
-                  </button>
-                </Link>
-              </Card>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
