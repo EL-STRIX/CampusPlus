@@ -87,7 +87,10 @@ export default function ReportIssuePage() {
   // Compute cascading streams based on selected department
   const currentDeptObj = departments.find((d) => d.name === selectedDept);
   const availableStreams = currentDeptObj
-    ? currentDeptObj.streams.map((s) => ({ value: s.name, label: s.name }))
+    ? [
+        ...currentDeptObj.streams.map((s) => ({ value: s.name, label: s.name })),
+        { value: 'OTHER_STREAM', label: 'Other Specialization (Specify Manually)' },
+      ]
     : [];
 
   // Compute cascading rooms based on selected building
@@ -163,6 +166,8 @@ export default function ReportIssuePage() {
       }
       if (!selectedStream) {
         newErrors.stream = 'Please select your stream / branch.';
+      } else if (selectedStream === 'OTHER_STREAM' && !customStream.trim()) {
+        newErrors.customStream = 'Please specify your specialization / branch name.';
       }
     }
 
@@ -199,7 +204,10 @@ export default function ReportIssuePage() {
       setSubmitting(true);
 
       const finalDepartment = selectedDept === 'OTHER' ? customDepartment.trim() : selectedDept;
-      const finalStream = selectedDept === 'OTHER' ? customStream.trim() : selectedStream;
+      const finalStream =
+        selectedDept === 'OTHER' || selectedStream === 'OTHER_STREAM'
+          ? customStream.trim()
+          : selectedStream;
 
       const formData = new FormData();
       formData.append('photo', photoFile);
@@ -465,24 +473,47 @@ export default function ReportIssuePage() {
                     />
                   </>
                 ) : (
-                  <Select
-                    label="Stream / Branch"
-                    id="stream"
-                    name="stream"
-                    placeholder={
-                      !selectedDept
-                        ? 'Select Department First'
-                        : availableStreams.length === 0
-                        ? 'No streams available'
-                        : 'Select Stream'
-                    }
-                    options={availableStreams}
-                    value={selectedStream}
-                    onChange={(e) => setSelectedStream(e.target.value)}
-                    error={errors.stream}
-                    disabled={!selectedDept || availableStreams.length === 0}
-                    required
-                  />
+                  <>
+                    <Select
+                      label="Stream / Branch"
+                      id="stream"
+                      name="stream"
+                      placeholder={
+                        !selectedDept
+                          ? 'Select Department First'
+                          : availableStreams.length === 0
+                          ? 'No streams available'
+                          : 'Select Stream / Branch'
+                      }
+                      options={availableStreams}
+                      value={selectedStream}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setSelectedStream(val);
+                        if (val !== 'OTHER_STREAM') {
+                          setCustomStream('');
+                        }
+                      }}
+                      error={errors.stream}
+                      disabled={!selectedDept || availableStreams.length === 0}
+                      required
+                    />
+
+                    {selectedStream === 'OTHER_STREAM' && (
+                      <div className="md:col-span-2">
+                        <Input
+                          label="Specify Custom Specialization / Branch"
+                          id="customStream"
+                          name="customStream"
+                          placeholder="e.g. Dual Degree / Specialized Elective"
+                          value={customStream}
+                          onChange={(e) => setCustomStream(e.target.value)}
+                          error={errors.customStream}
+                          required
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div className="md:col-span-2">
