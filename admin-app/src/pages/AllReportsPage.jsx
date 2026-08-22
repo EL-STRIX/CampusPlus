@@ -394,26 +394,42 @@ export default function AllReportsPage() {
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Header & Search Bar Card */}
-      <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-card space-y-4">
-        {/* Top Row: Page Title & Global Search */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-outline-variant/20">
+      {/* Header & Controls Panel */}
+      <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-card space-y-5">
+        {/* Top: Title & Count & Reset Button */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-headline font-bold text-on-surface tracking-tight">
                 All Equipment Reports
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-headline font-bold bg-primary/10 text-primary border border-primary/20">
+              <span className="px-3 py-1 rounded-full text-xs font-headline font-bold bg-primary/10 text-primary border border-primary/20">
                 {pagination.totalReports} {pagination.totalReports === 1 ? 'Report' : 'Reports'}
               </span>
             </div>
             <p className="text-xs font-sans text-on-surface-variant mt-1">
-              Search, filter, categorize, and manage campus hardware tickets.
+              Search, filter, categorize, and manage campus hardware tickets across all facilities.
             </p>
           </div>
 
-          {/* Search Box */}
-          <form onSubmit={handleSearchSubmit} className="relative w-full md:w-80">
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="inline-flex items-center gap-1.5 text-xs font-headline font-bold text-status-rejected hover:bg-rose-100/70 px-3.5 py-2 rounded-xl bg-rose-50 border border-rose-200 transition-all shadow-sm flex-shrink-0"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Clear All Filters
+            </button>
+          )}
+        </div>
+
+        {/* Middle: Omni Search Bar & Sort Dropdown */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 pt-1">
+          {/* Omni Search */}
+          <form onSubmit={handleSearchSubmit} className="relative flex-grow">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -421,10 +437,10 @@ export default function AllReportsPage() {
             </span>
             <input
               type="text"
-              placeholder="Search Tag, Student, Room, Device..."
+              placeholder="Search by student roll, asset tag, room, building, device, or problem description..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-10 pr-9 py-2 text-xs font-sans rounded-xl border border-outline-variant/60 bg-surface-container-low focus:bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+              className="w-full pl-10 pr-9 py-2.5 text-xs font-sans rounded-xl border border-outline-variant/60 bg-surface-container-low focus:bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-on-surface-variant/60 shadow-inner"
             />
             {searchInput && (
               <button
@@ -433,156 +449,15 @@ export default function AllReportsPage() {
                   setSearchInput('');
                   updateFilter('search', '');
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface text-xs font-bold"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface text-sm font-bold w-5 h-5 flex items-center justify-center rounded-full hover:bg-surface-container"
               >
                 ×
               </button>
             )}
           </form>
-        </div>
 
-        {/* Bottom Row: Unified Filter Strip & Sort Selector */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pt-1">
-          {/* Left: Filter Controls */}
-          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-            <span className="text-xs font-headline font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5 mr-1">
-              <svg className="w-3.5 h-3.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              Filters:
-            </span>
-
-            {/* Status Filter */}
-            <div className="relative min-w-[130px]">
-              <select
-                value={statusParam}
-                onChange={(e) => updateFilter('status', e.target.value)}
-                className={`w-full appearance-none text-xs font-sans pl-3 pr-7 py-2 rounded-xl border ${
-                  statusParam
-                    ? 'border-primary bg-primary/5 text-primary font-semibold'
-                    : 'border-outline-variant/60 bg-surface-container-low text-on-surface'
-                } focus:border-primary focus:outline-none transition-colors cursor-pointer`}
-              >
-                <option value="">Status: All</option>
-                <option value="open">🟢 Open</option>
-                <option value="in_progress">🟡 In Progress</option>
-                <option value="resolved">🔵 Resolved</option>
-                <option value="rejected">🔴 Rejected</option>
-              </select>
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </span>
-            </div>
-
-            {/* Department Filter */}
-            <div className="relative min-w-[160px] max-w-[210px]">
-              <select
-                value={departmentParam}
-                onChange={(e) => updateFilter('department', e.target.value)}
-                className={`w-full appearance-none text-xs font-sans pl-3 pr-7 py-2 rounded-xl border truncate ${
-                  departmentParam
-                    ? 'border-primary bg-primary/5 text-primary font-semibold'
-                    : 'border-outline-variant/60 bg-surface-container-low text-on-surface'
-                } focus:border-primary focus:outline-none transition-colors cursor-pointer`}
-              >
-                <option value="">Department: All</option>
-                {departments.map((d) => (
-                  <option key={d.id} value={d.name}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </span>
-            </div>
-
-            {/* Laboratory Type Filter */}
-            <div className="relative min-w-[170px] max-w-[230px]">
-              <select
-                value={labTypeParam}
-                onChange={(e) => {
-                  const nextLab = e.target.value;
-                  const next = new URLSearchParams(searchParams);
-                  if (nextLab) {
-                    next.set('labType', nextLab);
-                  } else {
-                    next.delete('labType');
-                  }
-                  // When labType changes or resets to default, clear deviceType
-                  next.delete('deviceType');
-                  next.set('page', '1');
-                  setSearchParams(next);
-                }}
-                className={`w-full appearance-none text-xs font-sans pl-3 pr-7 py-2 rounded-xl border truncate ${
-                  labTypeParam
-                    ? 'border-primary bg-primary/5 text-primary font-semibold'
-                    : 'border-outline-variant/60 bg-surface-container-low text-on-surface'
-                } focus:border-primary focus:outline-none transition-colors cursor-pointer`}
-              >
-                <option value="">Lab Type: All</option>
-                {LAB_TYPES_FILTER.map((lab) => (
-                  <option key={lab} value={lab}>
-                    {lab}
-                  </option>
-                ))}
-              </select>
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </span>
-            </div>
-
-            {/* Device / Equipment Filter */}
-            <div className="relative min-w-[150px] max-w-[220px]">
-              <select
-                value={deviceTypeParam}
-                onChange={(e) => updateFilter('deviceType', e.target.value)}
-                disabled={!labTypeParam}
-                className={`w-full appearance-none text-xs font-sans pl-3 pr-7 py-2 rounded-xl border truncate ${
-                  !labTypeParam
-                    ? 'border-outline-variant/30 bg-surface-container-low/50 text-outline cursor-not-allowed opacity-75'
-                    : deviceTypeParam
-                    ? 'border-primary bg-primary/5 text-primary font-semibold cursor-pointer'
-                    : 'border-outline-variant/60 bg-surface-container-low text-on-surface hover:bg-surface-container-lowest cursor-pointer'
-                } focus:border-primary focus:outline-none transition-colors`}
-              >
-                <option value="">Equipment: All</option>
-                {availableEquipment.map((dt) => (
-                  <option key={dt.value} value={dt.value}>
-                    {dt.label}
-                  </option>
-                ))}
-              </select>
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </span>
-            </div>
-
-            {/* Reset All Filters Button */}
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="inline-flex items-center gap-1 text-xs font-headline font-semibold text-status-rejected hover:bg-red-100/60 px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 transition-colors"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Reset
-              </button>
-            )}
-          </div>
-
-          {/* Right: Sort Control */}
-          <div className="relative flex-shrink-0 w-full sm:w-auto">
+          {/* Sort Dropdown */}
+          <div className="relative flex-shrink-0 md:w-80">
             <select
               value={`${sortByParam}_${sortOrderParam}`}
               onChange={(e) => {
@@ -590,20 +465,170 @@ export default function AllReportsPage() {
                 const next = new URLSearchParams(searchParams);
                 next.set('sortBy', sb);
                 next.set('sortOrder', so);
+                next.set('page', '1');
                 setSearchParams(next);
               }}
-              className="w-full sm:w-auto appearance-none text-xs font-headline font-semibold pl-3.5 pr-8 py-2 rounded-xl border border-outline-variant/60 bg-surface-container-low text-on-surface hover:bg-surface-container-lowest focus:border-primary focus:outline-none transition-colors cursor-pointer shadow-sm"
+              className="w-full appearance-none text-xs font-headline font-semibold pl-3.5 pr-8 py-2.5 rounded-xl border border-outline-variant/60 bg-surface-container-low text-on-surface hover:bg-surface-container-lowest focus:border-primary focus:outline-none transition-colors cursor-pointer shadow-sm"
             >
-              <option value="status_workflow_asc">Sort: Status Flow (Open Priority → In Progress → Solved → Rejected)</option>
-              <option value="createdAt_desc">Sort: All Newest First</option>
-              <option value="createdAt_asc">Sort: All Oldest First</option>
-              <option value="reportCount_desc">Sort: Priority (Most Reported)</option>
+              <option value="status_workflow_asc">⚡ Sort: Open Priority → In Progress → Solved → Rejected</option>
+              <option value="createdAt_desc">🕒 Sort: All Newest First</option>
+              <option value="createdAt_asc">⏳ Sort: All Oldest First</option>
+              <option value="reportCount_desc">🔥 Sort: Priority (Most Reported)</option>
             </select>
             <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
               </svg>
             </span>
+          </div>
+        </div>
+
+        {/* Bottom: 4 Structured Filter Columns */}
+        <div className="pt-3 border-t border-outline-variant/20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* 1. Status Filter */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-headline font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Status
+              </label>
+              <div className="relative">
+                <select
+                  value={statusParam}
+                  onChange={(e) => updateFilter('status', e.target.value)}
+                  className={`w-full appearance-none text-xs font-sans pl-3.5 pr-8 py-2.5 rounded-xl border ${
+                    statusParam
+                      ? 'border-primary bg-primary/5 text-primary font-bold shadow-sm'
+                      : 'border-outline-variant/60 bg-surface-container-low text-on-surface hover:bg-surface-container-lowest'
+                  } focus:border-primary focus:outline-none transition-colors cursor-pointer`}
+                >
+                  <option value="">All Statuses</option>
+                  <option value="open">🟢 Open (New Ticket)</option>
+                  <option value="in_progress">🟡 In Progress (Repairing)</option>
+                  <option value="resolved">🔵 Resolved (Fixed)</option>
+                  <option value="rejected">🔴 Rejected (Closed)</option>
+                </select>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            {/* 2. Department Filter */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-headline font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Department
+              </label>
+              <div className="relative">
+                <select
+                  value={departmentParam}
+                  onChange={(e) => updateFilter('department', e.target.value)}
+                  className={`w-full appearance-none text-xs font-sans pl-3.5 pr-8 py-2.5 rounded-xl border truncate ${
+                    departmentParam
+                      ? 'border-primary bg-primary/5 text-primary font-bold shadow-sm'
+                      : 'border-outline-variant/60 bg-surface-container-low text-on-surface hover:bg-surface-container-lowest'
+                  } focus:border-primary focus:outline-none transition-colors cursor-pointer`}
+                >
+                  <option value="">All Departments</option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.name}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            {/* 3. Laboratory Type Filter */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-headline font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Laboratory Type
+              </label>
+              <div className="relative">
+                <select
+                  value={labTypeParam}
+                  onChange={(e) => {
+                    const nextLab = e.target.value;
+                    const next = new URLSearchParams(searchParams);
+                    if (nextLab) {
+                      next.set('labType', nextLab);
+                    } else {
+                      next.delete('labType');
+                    }
+                    next.delete('deviceType');
+                    next.set('page', '1');
+                    setSearchParams(next);
+                  }}
+                  className={`w-full appearance-none text-xs font-sans pl-3.5 pr-8 py-2.5 rounded-xl border truncate ${
+                    labTypeParam
+                      ? 'border-primary bg-primary/5 text-primary font-bold shadow-sm'
+                      : 'border-outline-variant/60 bg-surface-container-low text-on-surface hover:bg-surface-container-lowest'
+                  } focus:border-primary focus:outline-none transition-colors cursor-pointer`}
+                >
+                  <option value="">All Lab Categories</option>
+                  {LAB_TYPES_FILTER.map((lab) => (
+                    <option key={lab} value={lab}>
+                      {lab}
+                    </option>
+                  ))}
+                </select>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            {/* 4. Equipment Filter */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-headline font-bold text-on-surface-variant uppercase tracking-wider flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Equipment
+                </span>
+                {!labTypeParam && (
+                  <span className="text-[10px] lowercase text-outline font-normal">
+                    (Select lab first)
+                  </span>
+                )}
+              </label>
+              <div className="relative">
+                <select
+                  value={deviceTypeParam}
+                  onChange={(e) => updateFilter('deviceType', e.target.value)}
+                  disabled={!labTypeParam}
+                  className={`w-full appearance-none text-xs font-sans pl-3.5 pr-8 py-2.5 rounded-xl border truncate ${
+                    !labTypeParam
+                      ? 'border-outline-variant/30 bg-surface-container-low/50 text-outline cursor-not-allowed opacity-75'
+                      : deviceTypeParam
+                      ? 'border-primary bg-primary/5 text-primary font-bold cursor-pointer shadow-sm'
+                      : 'border-outline-variant/60 bg-surface-container-low text-on-surface hover:bg-surface-container-lowest cursor-pointer'
+                  } focus:border-primary focus:outline-none transition-colors`}
+                >
+                  <option value="">All Equipment</option>
+                  {availableEquipment.map((dt) => (
+                    <option key={dt.value} value={dt.value}>
+                      {dt.label}
+                    </option>
+                  ))}
+                </select>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
