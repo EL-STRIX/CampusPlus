@@ -19,6 +19,7 @@ model Report {
   deviceType           String       @map("device_type")
   deviceNumber         String?      @map("device_number")
   deviceNumberVisible  Boolean      @map("device_number_visible")
+  labType              String?      @map("lab_type")
   buildingId           String       @map("building_id")
   roomId               String       @map("room_id")
   photoUrl             String       @map("photo_url")
@@ -49,6 +50,7 @@ model ReportReporter {
   studentCode  String   @map("student_code")
   department   String
   stream       String
+  labType      String?  @map("lab_type")
   yearSemester String?  @map("year_semester")
   notes        String?
   reportedAt   DateTime @default(now()) @map("reported_at")

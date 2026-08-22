@@ -338,6 +338,11 @@ export default function AllReportsPage() {
                     <td className="py-3.5 px-6 text-xs text-on-surface-variant">
                       <span className="font-semibold text-on-surface block">{report.buildingName}</span>
                       <span>Room {report.roomName}</span>
+                      {report.labType && (
+                        <span className="block text-[11px] text-primary font-medium truncate max-w-[200px]">
+                          {report.labType}
+                        </span>
+                      )}
                     </td>
                     <td className="py-3.5 px-6">
                       <span

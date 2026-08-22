@@ -31,6 +31,7 @@ const createReportSchema = z
       .string({ required_error: 'Stream is required' })
       .trim()
       .min(1, 'Stream is required'),
+    labType: z.string().trim().max(100).optional().nullable(),
     yearSemester: z.string().trim().max(30).optional().nullable(),
     buildingId: z
       .string({ required_error: 'Building ID is required' })

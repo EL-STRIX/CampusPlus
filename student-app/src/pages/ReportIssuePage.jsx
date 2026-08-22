@@ -32,6 +32,32 @@ const YEAR_SEMESTER_OPTIONS = [
   { value: 'Postgraduate / PhD', label: 'Postgraduate / Research Scholar' },
 ];
 
+const LAB_TYPES = [
+  { value: 'Computer / Software Systems Lab', label: 'Computer / Software Systems Lab' },
+  { value: 'Hardware, Microprocessor & Embedded Systems Lab', label: 'Hardware, Microprocessor & Embedded Systems Lab' },
+  { value: 'Electronics, Circuits & VLSI Lab', label: 'Electronics, Circuits & VLSI Lab' },
+  { value: 'Electrical Machines & Power Electronics Lab', label: 'Electrical Machines & Power Electronics Lab' },
+  { value: 'Electric Vehicle (EV) & Battery Research Lab', label: 'Electric Vehicle (EV) & Battery Research Lab' },
+  { value: 'Robotics, Automation & Mechatronics Lab', label: 'Robotics, Automation & Mechatronics Lab' },
+  { value: 'AI, Machine Learning & Data Analytics Lab', label: 'AI, Machine Learning & Data Analytics Lab' },
+  { value: 'Cloud Computing & Cyber Forensics Lab', label: 'Cloud Computing & Cyber Forensics Lab' },
+  { value: 'Networking & Server Infrastructure Lab', label: 'Networking & Server Infrastructure Lab' },
+  { value: 'Instrumentation & Process Control / Sensor Lab', label: 'Instrumentation & Process Control / Sensor Lab' },
+  { value: 'CAD / CAM & Simulation Lab', label: 'CAD / CAM & Simulation Lab' },
+  { value: 'Mechanical Workshop & Thermal / Fluid Lab', label: 'Mechanical Workshop & Thermal / Fluid Lab' },
+  { value: 'Civil, Geotechnical & Concrete Testing Lab', label: 'Civil, Geotechnical & Concrete Testing Lab' },
+  { value: 'Surveying & Remote Sensing / GIS Lab', label: 'Surveying & Remote Sensing / GIS Lab' },
+  { value: 'Biomedical Engineering & Medical Diagnostics Lab', label: 'Biomedical Engineering & Medical Diagnostics Lab' },
+  { value: 'Pharmaceutical Sciences & Formulation Lab', label: 'Pharmaceutical Sciences & Formulation Lab' },
+  { value: 'Biotechnology, Genetics & Bioinformatics Lab', label: 'Biotechnology, Genetics & Bioinformatics Lab' },
+  { value: 'Chemical Analysis & Instrumental Chemistry Lab', label: 'Chemical Analysis & Instrumental Chemistry Lab' },
+  { value: 'Applied Physics, Optics & Laser Lab', label: 'Applied Physics, Optics & Laser Lab' },
+  { value: 'Multimedia, VFX & Sound Recording Studio Lab', label: 'Multimedia, VFX & Sound Recording Studio Lab' },
+  { value: 'Language & Digital Communication Lab', label: 'Language & Digital Communication Lab' },
+  { value: 'Central Innovation & Project Prototyping Lab', label: 'Central Innovation & Project Prototyping Lab' },
+  { value: 'OTHER_LAB', label: 'Other Lab Type (Specify Manually)' },
+];
+
 export default function ReportIssuePage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -47,6 +73,8 @@ export default function ReportIssuePage() {
   const [selectedStream, setSelectedStream] = useState('');
   const [customDepartment, setCustomDepartment] = useState('');
   const [customStream, setCustomStream] = useState('');
+  const [selectedLabType, setSelectedLabType] = useState('');
+  const [customLabType, setCustomLabType] = useState('');
   const [yearSemester, setYearSemester] = useState('');
   const [selectedBuilding, setSelectedBuilding] = useState('');
   const [selectedRoom, setSelectedRoom] = useState('');
@@ -171,6 +199,10 @@ export default function ReportIssuePage() {
       }
     }
 
+    if (selectedLabType === 'OTHER_LAB' && !customLabType.trim()) {
+      newErrors.customLabType = 'Please specify the lab type.';
+    }
+
     if (!selectedBuilding) {
       newErrors.building = 'Please select the building location.';
     }
@@ -208,12 +240,17 @@ export default function ReportIssuePage() {
         selectedDept === 'OTHER' || selectedStream === 'OTHER_STREAM'
           ? customStream.trim()
           : selectedStream;
+      const finalLabType =
+        selectedLabType === 'OTHER_LAB'
+          ? customLabType.trim()
+          : selectedLabType || null;
 
       const formData = new FormData();
       formData.append('photo', photoFile);
       formData.append('studentCode', studentCode.trim());
       formData.append('department', finalDepartment);
       formData.append('stream', finalStream);
+      if (finalLabType) formData.append('labType', finalLabType);
       if (yearSemester) formData.append('yearSemester', yearSemester);
       formData.append('buildingId', selectedBuilding);
       formData.append('roomId', selectedRoom);
@@ -516,7 +553,40 @@ export default function ReportIssuePage() {
                   </>
                 )}
 
-                <div className="md:col-span-2">
+                <div className={selectedLabType === 'OTHER_LAB' ? 'md:col-span-2' : ''}>
+                  <Select
+                    label="Type of Laboratory"
+                    id="labType"
+                    name="labType"
+                    placeholder="Select Type of Laboratory (Optional)"
+                    options={LAB_TYPES}
+                    value={selectedLabType}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSelectedLabType(val);
+                      if (val !== 'OTHER_LAB') {
+                        setCustomLabType('');
+                      }
+                    }}
+                  />
+                </div>
+
+                {selectedLabType === 'OTHER_LAB' && (
+                  <div className="md:col-span-2">
+                    <Input
+                      label="Specify Custom Lab Type"
+                      id="customLabType"
+                      name="customLabType"
+                      placeholder="e.g. High Voltage Testing Lab / Optometry Lab"
+                      value={customLabType}
+                      onChange={(e) => setCustomLabType(e.target.value)}
+                      error={errors.customLabType}
+                      required
+                    />
+                  </div>
+                )}
+
+                <div className={selectedLabType === 'OTHER_LAB' ? 'md:col-span-2' : ''}>
                   <Select
                     label="Year / Semester"
                     id="yearSemester"

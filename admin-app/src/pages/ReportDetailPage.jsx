@@ -242,6 +242,17 @@ export default function ReportDetailPage() {
                 </span>
               </div>
 
+              {report.labType && (
+                <div className="col-span-2 pt-2 border-t border-outline-variant/20">
+                  <span className="text-[11px] font-headline font-bold uppercase tracking-wider text-on-surface-variant block mb-1">
+                    Laboratory Type
+                  </span>
+                  <span className="text-sm font-sans font-medium text-on-surface">
+                    {report.labType}
+                  </span>
+                </div>
+              )}
+
               {report.rejectionReason && (
                 <div className="col-span-2 p-3.5 rounded-xl bg-red-50 border border-status-rejected/30 text-xs text-status-rejected">
                   <span className="font-headline font-bold block mb-0.5">Rejection Reason:</span>
@@ -319,6 +330,11 @@ export default function ReportDetailPage() {
                         <span className="bg-surface-container px-2 py-0.5 rounded border border-outline-variant/30">
                           {rep.stream}
                         </span>
+                        {rep.labType && (
+                          <span className="bg-primary/10 text-primary font-medium px-2 py-0.5 rounded border border-primary/20">
+                            {rep.labType}
+                          </span>
+                        )}
                         {rep.yearSemester && (
                           <span className="bg-surface-container px-2 py-0.5 rounded border border-outline-variant/30">
                             {rep.yearSemester}

@@ -181,6 +181,11 @@ export default function NeedsReviewPage() {
                       <p>
                         <strong>Reporter:</strong> Student {report.reporters[0].studentCode} ({report.reporters[0].department})
                       </p>
+                      {report.labType && (
+                        <p>
+                          <strong>Lab:</strong> {report.labType}
+                        </p>
+                      )}
                       {report.reporters[0].notes && (
                         <p className="italic bg-surface-container-lowest p-2.5 rounded border border-outline-variant/20 text-on-surface">
                           &quot;{report.reporters[0].notes}&quot;

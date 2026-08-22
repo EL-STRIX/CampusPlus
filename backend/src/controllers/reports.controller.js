@@ -41,6 +41,7 @@ async function submitReport(req, res, next) {
       studentCode: req.body.studentCode,
       department: req.body.department,
       stream: req.body.stream,
+      labType: req.body.labType || null,
       yearSemester: req.body.yearSemester || null,
       buildingId: req.body.buildingId,
       roomId: req.body.roomId,
