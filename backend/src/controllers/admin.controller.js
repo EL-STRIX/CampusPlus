@@ -8,17 +8,18 @@ const { AppError } = require('../middleware/error.middleware');
 async function getReports(req, res, next) {
   try {
     const {
+      page = 1,
+      limit = 20,
       status,
       buildingId,
       department,
+      labType,
       deviceType,
       dateFrom,
       dateTo,
-      search,
       sortBy = 'reportCount',
       sortOrder = 'desc',
-      page = 1,
-      limit = 20,
+      search,
     } = req.query;
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -30,24 +31,37 @@ async function getReports(req, res, next) {
       mergedInto: null, // Exclude soft-deleted/merged reports by default
     };
 
-    if (status) {
-      where.status = status;
+    if (status && status.trim()) {
+      where.status = status.trim();
     }
 
-    if (buildingId) {
-      where.buildingId = buildingId;
+    if (buildingId && buildingId.trim()) {
+      where.OR = [
+        { buildingId: buildingId.trim() },
+        { buildingName: { contains: buildingId.trim(), mode: 'insensitive' } },
+      ];
     }
 
-    if (deviceType) {
-      where.deviceType = deviceType;
+    if (deviceType && deviceType.trim()) {
+      where.deviceType = {
+        contains: deviceType.trim(),
+        mode: 'insensitive',
+      };
+    }
+
+    if (labType && labType.trim()) {
+      where.labType = {
+        contains: labType.trim(),
+        mode: 'insensitive',
+      };
     }
 
     // Filter by department (matches any reporter with that department)
-    if (department) {
+    if (department && department.trim()) {
       where.reporters = {
         some: {
           department: {
-            contains: department,
+            contains: department.trim(),
             mode: 'insensitive',
           },
         },
@@ -61,12 +75,36 @@ async function getReports(req, res, next) {
       if (dateTo) where.createdAt.lte = new Date(dateTo);
     }
 
-    // Search by student code or device number
+    // Search across device tag, device name, room, building, lab type, and student code
     if (search && search.trim()) {
       const searchTerm = search.trim();
       where.OR = [
         {
           deviceNumber: {
+            contains: searchTerm,
+            mode: 'insensitive',
+          },
+        },
+        {
+          deviceType: {
+            contains: searchTerm,
+            mode: 'insensitive',
+          },
+        },
+        {
+          buildingName: {
+            contains: searchTerm,
+            mode: 'insensitive',
+          },
+        },
+        {
+          roomName: {
+            contains: searchTerm,
+            mode: 'insensitive',
+          },
+        },
+        {
+          labType: {
             contains: searchTerm,
             mode: 'insensitive',
           },

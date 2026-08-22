@@ -23,18 +23,10 @@ export default function AdminHeader({ title, onMenuToggle }) {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container text-xs font-headline font-medium text-on-surface-variant border border-outline-variant/30">
-          <span className="w-2 h-2 rounded-full bg-status-resolved"></span>
-          <span>System Operational</span>
-        </div>
-
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center font-headline font-bold text-xs shadow-sm">
             {user?.username?.charAt(0).toUpperCase() || 'A'}
           </div>
-          <span className="hidden md:inline font-headline font-semibold text-sm text-on-surface">
-            {user?.username}
-          </span>
         </div>
       </div>
     </header>
