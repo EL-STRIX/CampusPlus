@@ -17,17 +17,18 @@
   - [2. List Campus Locations](#2-list-campus-locations)
   - [3. List Room Equipment](#3-list-room-equipment)
   - [4. Submit Fault Report](#4-submit-fault-report)
-  - [5. Public Live Ticker](#5-public-live-ticker)
+  - [5. Track Report Status (Public)](#5-track-report-status-public)
+  - [6. Public Live Ticker](#6-public-live-ticker)
 - [Admin Endpoints](#-admin-endpoints)
-  - [6. Admin Login](#6-admin-login)
-  - [7. Dashboard Analytics](#7-dashboard-analytics)
-  - [8. List Reports (Filterable)](#8-list-reports-filterable)
-  - [9. Get Single Report Details](#9-get-single-report-details)
-  - [10. Update Report Status](#10-update-report-status)
-  - [11. Get Needs Review Queue](#11-get-needs-review-queue)
-  - [12. Merge Report](#12-merge-report)
-  - [13. Keep Report Separate](#13-keep-report-separate)
-  - [14. Change Admin Password](#14-change-admin-password)
+  - [7. Admin Login](#7-admin-login)
+  - [8. Dashboard Analytics](#8-dashboard-analytics)
+  - [9. List Reports (Filterable)](#9-list-reports-filterable)
+  - [10. Get Single Report Details](#10-get-single-report-details)
+  - [11. Update Report Status](#11-update-report-status)
+  - [12. Get Needs Review Queue](#12-get-needs-review-queue)
+  - [13. Merge Report](#13-merge-report)
+  - [14. Keep Report Separate](#14-keep-report-separate)
+  - [15. Change Admin Password](#15-change-admin-password)
 
 ---
 
@@ -161,7 +162,7 @@ Retrieves known equipment asset tags registered in a specific room.
 ---
 
 ### 4. Submit Fault Report
-Submits a hardware fault report with student details, location, equipment info, and photographic evidence.
+Submits a hardware fault report with student details, location, equipment info, and photographic evidence. Equipment devices are mapped dynamically based on selected Department and Stream/Branch.
 
 - **Endpoint:** `POST /reports`
 - **Auth:** Public
@@ -171,16 +172,16 @@ Submits a hardware fault report with student details, location, equipment info, 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `studentCode` | string | Yes | Student Roll / ID (e.g. `BWU/BCA/24/330`) |
-| `department` | string | Yes | Academic department name |
-| `stream` | string | Yes | Degree stream name |
-| `yearSemester` | string | Yes | Year / Semester identifier |
-| `buildingName` | string | Yes | Selected campus building |
-| `roomName` | string | Yes | Selected room / lab name |
-| `labType` | string | Yes | Selected laboratory domain |
-| `deviceType` | string | Yes | Type of hardware (e.g. `CPU / Computer Workstation`) |
-| `deviceNumber` | string | No | Asset barcode / tag (optional if missing) |
+| `department` | string | Yes | Academic department name (e.g. `Computer Science & Engineering`) |
+| `stream` | string | Yes | Degree stream / branch (e.g. `B.Tech CSE (AI & ML)`) |
+| `yearSemester` | string | No | Year / Semester identifier (e.g. `2nd Year / Sem 3`) |
+| `buildingName` | string | Yes | Campus building name |
+| `roomName` | string | Yes | Room / lab identifier |
+| `deviceType` | string | Yes | Type of hardware (e.g. `GPU Deep Learning Workstation`, `DSO`, `3D Printer`) |
+| `deviceNumber` | string | Conditional | Asset barcode / tag number (required unless `deviceNumberVisible` is false) |
 | `deviceNumberVisible` | boolean | Yes | `true` if tag is visible; `false` if missing/scratched |
-| `notes` | string | Yes | Description of fault / symptoms |
+| `labType` | string | No | Legacy lab domain (optional; equipment is suggested by department & stream) |
+| `additionalNotes` | string | No | Optional description of fault symptoms / error codes |
 | `photo` | File (binary) | Yes | Photographic evidence (JPEG, PNG, WebP $\le$ 5MB) |
 
 #### Response (`201 Created`):
@@ -188,10 +189,10 @@ Submits a hardware fault report with student details, location, equipment info, 
 {
   "success": true,
   "data": {
-    "reportId": "rep_9a7b1c3d",
-    "isDuplicate": false,
-    "status": "open",
-    "message": "Report registered successfully."
+    "reportId": "4a993b5c-dc78-451c-a29c-57dad78dabf4",
+    "isNewReport": true,
+    "isPossibleDuplicate": false,
+    "reportCount": 1
   },
   "error": null
 }
@@ -199,7 +200,63 @@ Submits a hardware fault report with student details, location, equipment info, 
 
 ---
 
-### 5. Public Live Ticker
+### 5. Track Report Status (Public)
+Public zero-login ticket tracking endpoint. Returns public report status, location, equipment info, multi-report elevation counter, and lifecycle transition history without exposing reporter personal contact information. Supports exact UUID, 8-character prefix matching, and automatic prefix/quote sanitization.
+
+- **Endpoint:** `GET /reports/track/:id` (and alias `GET /reports/:id`)
+- **Auth:** Public
+- **Rate Limit:** Standard public rate limiter (100 requests per 15 minutes)
+
+#### Path Parameters:
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | Yes | Report Ticket UUID or 8-character prefix (e.g. `4a993b5c-dc78-451c...` or `4a993b5c`) |
+
+#### Response (`200 OK`):
+```json
+{
+  "success": true,
+  "data": {
+    "id": "4a993b5c-dc78-451c-a29c-57dad78dabf4",
+    "deviceType": "GPU Deep Learning Workstation (NVIDIA / CUDA)",
+    "deviceNumber": "BWU/CSE/GPU-04",
+    "deviceNumberVisible": true,
+    "labType": null,
+    "photoUrl": "/uploads/d1990ff0-68b5-422f-bee4-ce0643bcc368.jpg",
+    "buildingId": null,
+    "buildingName": "Academic Block 1",
+    "roomId": null,
+    "roomName": "AI & Robotics Lab 408",
+    "reportCount": 2,
+    "status": "in_progress",
+    "rejectionReason": null,
+    "mergedInto": null,
+    "mergedIntoReport": null,
+    "createdAt": "2026-08-22T15:28:15.701Z",
+    "updatedAt": "2026-08-22T16:10:00.000Z",
+    "resolvedAt": null,
+    "statusHistory": [
+      {
+        "id": "hist_01",
+        "status": "open",
+        "changedAt": "2026-08-22T15:28:15.701Z",
+        "changedBy": "Facilities Maintenance Staff"
+      },
+      {
+        "id": "hist_02",
+        "status": "in_progress",
+        "changedAt": "2026-08-22T16:10:00.000Z",
+        "changedBy": "Facilities Maintenance Staff"
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+---
+
+### 6. Public Live Ticker
 Returns recent campus issues and resolutions for public status transparency.
 
 - **Endpoint:** `GET /reports/recent`
@@ -227,7 +284,7 @@ Returns recent campus issues and resolutions for public status transparency.
 
 ## 🛡 Admin Endpoints (Authenticated)
 
-### 6. Admin Login
+### 7. Admin Login
 Authenticates administrator credentials and returns an access token.
 
 - **Endpoint:** `POST /auth/login`

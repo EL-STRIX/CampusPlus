@@ -35,15 +35,14 @@ Currently, when lab equipment breaks down, there is no structured way for studen
 
 | In Scope (v1 / MVP) | Out of Scope (v1) — Future Phase |
 |---|---|
-| Anonymous student report submission | Student login / report history / tracking ID lookup |
-| Photo upload for device | Multiple photos per report |
-| Duplicate detection (room + device number) | AI-based image matching for duplicate detection |
-| Manual-review flow when device number is not visible | Automated fuzzy-matching of ambiguous duplicates |
-| Single admin account, full status workflow | Multi-admin roles / permission tiers |
-| Admin dashboard, filters, search | Email/SMS/push notifications |
-| Report priority via count | Notifications badge / live updates (websockets) — noted as a recommended fast-follow, see §5.6 |
-| SQL (PostgreSQL) data storage | Analytics/reporting exports (CSV/PDF) — fast-follow candidate |
-| Responsive web (mobile + desktop browsers) | Native mobile app |
+| Zero-login student report submission | Student account registration / login requirement |
+| Live Public Ticket Tracking (`/track`) by Ticket ID | Multi-photo per report upload (gallery) |
+| Dynamic branch-tailored hardware equipment selection | AI-based computer vision duplicate detection |
+| Photo upload for broken hardware verification | Automated fuzzy-matching of ambiguous duplicates |
+| Duplicate detection & elevation counter (`room` + `deviceNumber`) | Multi-admin organizational role hierarchies |
+| "Needs Review" queue for untagged / ambiguous devices | SMS / Push notifications to personal numbers |
+| Single admin operations console, status lifecycle workflow | Real-time WebSocket subscriptions |
+| Admin dashboard, search, and room-based merge tools | Native mobile application (PWA / responsive web provided) |
 
 ### 1.5 Non-Goals (Explicit)
 - No student authentication in v1 — anonymity by design is a deliberate product decision to reduce reporting friction, not an oversight.
@@ -57,7 +56,7 @@ Currently, when lab equipment breaks down, there is no structured way for studen
 | Role | Person | Responsibility |
 |---|---|---|
 | Product Owner / Developer | You (Final Year Student) | Defines requirements, builds, tests, and demos the system |
-| End User — Reporter | Students | Submit fault reports |
+| End User — Reporter | Students | Submit fault reports and track live maintenance resolution |
 | End User — Operator | Lab Admin / IT Staff (represented by the single admin account) | Triage and resolve reports |
 
 *(No formal academic panel/guide is being tracked as a stakeholder for this document per current scope — can be added later if a mentor requests a review checkpoint.)*
@@ -68,14 +67,14 @@ Currently, when lab equipment breaks down, there is no structured way for studen
 
 | Persona | Description | Access |
 |---|---|---|
-| **Student (Reporter)** | Any student who finds a faulty device in a lab | Public, no login, dedicated site/URL |
-| **Admin (Lab/IT Staff)** | Single admin managing all reports | Separate login-protected site/URL |
+| **Student (Reporter)** | Any student who finds a faulty device in a lab or classroom | Public, no login, dedicated site/URL (`/report`, `/track`) |
+| **Admin (Lab/IT Staff)** | Single admin managing all campus maintenance tickets | Separate login-protected site/URL (`/admin`) |
 
 ---
 
 ## 4. User Stories & Acceptance Criteria
 
-### Epic A — Student Reporting
+### Epic A — Student Reporting & Tracking
 
 **US-A1:** As a student, I want to report a broken device without logging in, so that I can quickly flag an issue without friction.
 - **Acceptance Criteria:**
@@ -96,10 +95,18 @@ Currently, when lab equipment breaks down, there is no structured way for studen
   - AC2: If "not visible" is checked, the report is still created but flagged `device_number_visible = false`.
   - AC3: Reports flagged this way are never auto-merged (see §6.3 Fix) — they always go to admin for manual match confirmation.
 
-**US-A4:** As a student, I want to know my report was submitted successfully, so that I have confidence it was received.
+**US-A4:** As a student, I want to know my report was submitted successfully and receive a Ticket ID, so that I have proof it was received.
 - **Acceptance Criteria:**
-  - AC1: A confirmation screen/message appears after successful submission.
-  - AC2: If submission fails (network/server error), a clear retry message is shown and form data is not lost.
+  - AC1: A confirmation screen appears after successful submission displaying the unique Ticket ID with a 1-click copy action.
+  - AC2: Provides minimal direct navigation: "Track Status", "Report Another", and "Home".
+  - AC3: If submission fails (network/server error), a clear retry message is shown and form data is not lost.
+
+**US-A5:** As a student, I want to enter my Ticket ID on a public tracking page, so that I can monitor live maintenance progress without logging in.
+- **Acceptance Criteria:**
+  - AC1: Public tracking page (`/track`) allows looking up status using exact UUID or 8-character prefix.
+  - AC2: Automatically sanitizes pasted strings (strips "Ticket ID:", quotes, "#", and surrounding whitespace).
+  - AC3: Displays a 3-stage visual progress stepper (*Submitted* $\rightarrow$ *Technician Assigned* $\rightarrow$ *Resolved*) or rejection notice.
+  - AC4: Displays campus equipment details, photo thumbnail with click-to-enlarge modal, and timestamped activity log.
 
 ### Epic B — Duplicate Detection & Prioritization
 

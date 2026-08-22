@@ -56,11 +56,20 @@ describe('Edge Cases & Security Hardening (PRD §9 & Architecture §9)', () => {
     if (fs.existsSync(fakeMaliciousPath)) fs.unlinkSync(fakeMaliciousPath);
     if (fs.existsSync(oversizedImagePath)) fs.unlinkSync(oversizedImagePath);
 
-    if (testRoomId) {
-      await prisma.reportReporter.deleteMany();
-      await prisma.report.deleteMany();
-      await prisma.room.deleteMany({ where: { id: { in: [testRoomId, otherRoomId] } } });
-      await prisma.building.deleteMany({ where: { id: { in: [testBuildingId, otherBuildingId] } } });
+    if (testRoomId || otherRoomId) {
+      const roomIds = [testRoomId, otherRoomId].filter(Boolean);
+      const reportsToDelete = await prisma.report.findMany({
+        where: { roomId: { in: roomIds } },
+        select: { id: true },
+      });
+      const reportIds = reportsToDelete.map((r) => r.id);
+      if (reportIds.length > 0) {
+        await prisma.reportReporter.deleteMany({ where: { reportId: { in: reportIds } } });
+        await prisma.reportStatusHistory.deleteMany({ where: { reportId: { in: reportIds } } });
+        await prisma.report.deleteMany({ where: { id: { in: reportIds } } });
+      }
+      await prisma.room.deleteMany({ where: { id: { in: roomIds } } });
+      await prisma.building.deleteMany({ where: { id: { in: [testBuildingId, otherBuildingId].filter(Boolean) } } });
     }
     await prisma.$disconnect();
   });

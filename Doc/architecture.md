@@ -81,7 +81,7 @@ Both frontends talk **only** to the backend API — they never talk to the datab
 campusplus/
 ├── student-app/                  # Public React SPA (Vite + Tailwind)
 │   ├── src/
-│   │   ├── pages/                # Home, ReportIssue, Confirmation, NotFound
+│   │   ├── pages/                # HomePage, ReportIssuePage, ConfirmationPage, TrackReportPage, NotFoundPage
 │   │   ├── components/
 │   │   ├── api/                  # Axios/fetch client for backend calls
 │   │   ├── App.jsx

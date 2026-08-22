@@ -100,16 +100,34 @@
 ---
 
 #### Page 3 — Confirmation / Thank You
-**Reference section to mirror:** None directly (reference has no equivalent) — design as a simple centered success state:
-- Large checkmark/icon
+Centered success state with instant tracking navigation:
+- Success checkmark icon.
 - Bold headline: "Report Submitted — Thank You!"
-- Short subtext confirming what happens next ("Our admin team will review this shortly.")
-- Secondary button: "Report Another Issue" (links back to Page 2)
-- Keep the same header/footer shell as the rest of the site for consistency.
+- **Ticket ID block:** Displays the generated UUID with a 1-click "Copy Ticket ID" button.
+- Context explanation: If single report, indicates technician intake; if elevated duplicate, shows total reporter count.
+- **Minimal 3-Button Navigation Row:**
+  1. `Track Status` (Primary with clipboard icon) $\rightarrow$ Direct navigation to `/track?id=<ID>`.
+  2. `Report Another` (Outline with plus icon) $\rightarrow$ Returns to `/report`.
+  3. `Home` (Ghost with home icon) $\rightarrow$ Returns to `/`.
+- Consistent header & footer shell.
 
 ---
 
-#### Page 4 — 404 / Not Found
+#### Page 4 — Track Report Status (`/track`, `/track/:id`)
+Public zero-login ticket tracking interface:
+- **Search Header:** Prominent Ticket ID search bar with clear button and 1-click recent ticket history pills stored in `localStorage`.
+- **Top Status Card:**
+  - Ticket ID with 1-click copy.
+  - 3-stage visual progress stepper: **1. Submitted (Logged)** $\rightarrow$ **2. In Progress (Technician Assigned)** $\rightarrow$ **3. Resolved (Repaired & Tested)**.
+  - Rejection / Closure callout if status is rejected with admin reasoning.
+  - Multi-report priority boost notice if `reportCount > 1`.
+- **Main Details Grid:**
+  - Left column: Equipment & Location details card (Equipment type, asset tag, building, room, lab specialization) and Maintenance Activity Audit Log (chronological timestamped status changes).
+  - Right column: Submitted photo evidence card with hover zoom and click-to-enlarge lightbox modal.
+
+---
+
+#### Page 5 — 404 / Not Found
 - Simple centered layout: large "404" or icon, short message ("Page not found"), button back to Home.
 - Reuse header/footer shell.
 

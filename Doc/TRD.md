@@ -348,7 +348,66 @@ additionalNotes: string (optional, max 500 chars)
 
 ---
 
-### 5.4 `POST /admin/login` (Public)
+### 5.4 `GET /reports/track/:id` (Public)
+**Description:** Public ticket tracking lookup. Allows checking status by UUID or 8-character prefix without authentication. Input is sanitized to strip prefixes/quotes.
+
+**Response `200 OK`:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "4a993b5c-dc78-451c-a29c-57dad78dabf4",
+    "deviceType": "GPU Deep Learning Workstation (NVIDIA / CUDA)",
+    "deviceNumber": "BWU/CSE/GPU-04",
+    "deviceNumberVisible": true,
+    "labType": null,
+    "photoUrl": "/uploads/d1990ff0-68b5-422f-bee4-ce0643bcc368.jpg",
+    "buildingId": null,
+    "buildingName": "Academic Block 1",
+    "roomId": null,
+    "roomName": "AI & Robotics Lab 408",
+    "reportCount": 2,
+    "status": "in_progress",
+    "rejectionReason": null,
+    "mergedInto": null,
+    "mergedIntoReport": null,
+    "createdAt": "2026-08-22T15:28:15.701Z",
+    "updatedAt": "2026-08-22T16:10:00.000Z",
+    "resolvedAt": null,
+    "statusHistory": [
+      {
+        "id": "hist_01",
+        "status": "open",
+        "changedAt": "2026-08-22T15:28:15.701Z",
+        "changedBy": "Facilities Maintenance Staff"
+      },
+      {
+        "id": "hist_02",
+        "status": "in_progress",
+        "changedAt": "2026-08-22T16:10:00.000Z",
+        "changedBy": "Facilities Maintenance Staff"
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+**Response `404 Not Found`:**
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Report ticket \"4a993b5c\" was not found. Please check your Ticket ID and try again."
+  }
+}
+```
+
+---
+
+### 5.5 `POST /admin/login` (Public)
 **Request:**
 ```json
 { "username": "admin", "password": "••••••••" }
