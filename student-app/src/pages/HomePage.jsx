@@ -8,13 +8,13 @@ export default function HomePage() {
       {/* Hero Section with Visual Gradient & Tech Teal Overlay */}
       <section className="relative w-full min-h-[560px] md:min-h-[620px] flex items-center justify-center overflow-hidden bg-primary">
         <div
-          className="absolute inset-0 z-0 bg-cover bg-center opacity-30 mix-blend-luminosity"
+          className="absolute inset-0 z-0 bg-cover bg-center opacity-40"
           style={{
             backgroundImage:
-              "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/IIT_Roorkee_Main_Building.jpg')",
+              "url('https://www.brainwareuniversity.ac.in/BWUNL/February2023/1st.jpg')",
           }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/85 to-primary/60 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/75 to-primary/45 z-0"></div>
 
         <div className="relative z-10 max-w-container-max mx-auto px-gutter text-center flex flex-col items-center py-16">
           <span className="text-xs font-headline font-bold uppercase tracking-wider text-primary-fixed bg-white/10 px-4 py-1.5 rounded-full inline-flex items-center gap-2 mb-6 backdrop-blur-md border border-white/10 shadow-sm">
