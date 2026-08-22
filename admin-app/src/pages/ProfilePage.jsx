@@ -128,7 +128,6 @@ export default function ProfilePage() {
               <div className="py-4 flex justify-between items-center">
                 <span className="text-on-surface-variant font-medium">Account Status</span>
                 <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
                   Active Session
                 </span>
               </div>

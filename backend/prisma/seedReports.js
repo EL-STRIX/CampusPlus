@@ -340,7 +340,79 @@ async function main() {
     },
   });
 
-  console.log(`Successfully seeded ${[rep1, rep2, rep3, rep4, rep5, rep6, rep7, rep8].length} campus reports!`);
+  // 9. Flagged Needs Review: Untagged Computer in Lab 408 (matches rep1)
+  const rep9 = await prisma.report.create({
+    data: {
+      deviceType: 'CPU / Computer Workstation',
+      deviceNumber: null,
+      deviceNumberVisible: false,
+      labType: 'Computer / Software Systems Lab',
+      buildingName: 'Academic Block 1',
+      roomName: 'Lab 408',
+      photoUrl: photo1,
+      reportCount: 1,
+      possibleDuplicate: true,
+      suggestedMatchIds: [rep1.id],
+      status: 'open',
+      createdAt: new Date(Date.now() - 3600000 * 1), // 1 hour ago
+      reporters: {
+        create: [
+          {
+            studentCode: 'BWU/BCA/24/389',
+            department: 'Computer Applications (BCA / MCA / B.Sc IT)',
+            stream: 'Bachelor of Computer Applications (BCA)',
+            labType: 'Computer / Software Systems Lab',
+            yearSemester: '1st Year / Sem 1',
+            notes: 'Computer near window row 3 not turning on and smells like burnt plastic. Asset tag sticker was peeled off.',
+            reportedAt: new Date(Date.now() - 3600000 * 1),
+          },
+        ],
+      },
+      statusHistory: {
+        create: [
+          { status: 'open', changedAt: new Date(Date.now() - 3600000 * 1), changedBy: admin.id },
+        ],
+      },
+    },
+  });
+
+  // 10. Flagged Needs Review: Untagged Oscilloscope in Circuits Lab 101 (matches rep3)
+  const rep10 = await prisma.report.create({
+    data: {
+      deviceType: 'Digital Storage Oscilloscope (DSO)',
+      deviceNumber: null,
+      deviceNumberVisible: false,
+      labType: 'Electronics, VLSI & Embedded Systems Lab',
+      buildingName: 'Science Block',
+      roomName: 'Circuits Lab 101',
+      photoUrl: photo3,
+      reportCount: 1,
+      possibleDuplicate: true,
+      suggestedMatchIds: [rep3.id],
+      status: 'open',
+      createdAt: new Date(Date.now() - 3600000 * 3), // 3 hours ago
+      reporters: {
+        create: [
+          {
+            studentCode: 'BWU/ECE/23/044',
+            department: 'Electronics & Communication Engineering (ECE)',
+            stream: 'B.Tech in Electronics & Communication Engineering',
+            labType: 'Electronics, VLSI & Embedded Systems Lab',
+            yearSemester: '2nd Year / Sem 3',
+            notes: 'DSO on Workbench 2 has faulty Channel 1 probe BNC connector. Asset barcode is scratched and illegible.',
+            reportedAt: new Date(Date.now() - 3600000 * 3),
+          },
+        ],
+      },
+      statusHistory: {
+        create: [
+          { status: 'open', changedAt: new Date(Date.now() - 3600000 * 3), changedBy: admin.id },
+        ],
+      },
+    },
+  });
+
+  console.log(`Successfully seeded ${[rep1, rep2, rep3, rep4, rep5, rep6, rep7, rep8, rep9, rep10].length} campus reports (including 2 Needs Review tickets)!`);
 }
 
 main()
