@@ -9,6 +9,7 @@
     "start": "node src/server.js",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
+    "postinstall": "prisma generate",
     "test": "jest --runInBand && node prisma/seedReports.js",
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",

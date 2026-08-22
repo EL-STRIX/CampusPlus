@@ -1,24 +1,78 @@
-name: Backend Deploy
+name: Backend CI & Deploy
 
 on:
   push:
+    branches: [main]
+    paths: ['backend/**', '.github/workflows/backend-deploy.yml']
+  pull_request:
     branches: [main]
     paths: ['backend/**']
 
 jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: campusplus_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: cd backend && npm ci
-      - run: cd backend && npm run lint
-      - run: cd backend && npm test
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: Install Dependencies
+        run: cd backend && npm ci
+
+      - name: Generate Prisma Client
+        run: cd backend && npx prisma generate
+
+      - name: Prepare Test Database
+        run: cd backend && npx prisma db push --skip-generate
+        env:
+          DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/campusplus_test?schema=public"
+
+      - name: Seed Admin for Auth Tests
+        run: cd backend && node src/db/seeds/admin.seed.js
+        env:
+          DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/campusplus_test?schema=public"
+
+      - name: Run Code Linter
+        run: cd backend && npm run lint
+
+      - name: Run Backend Automated Tests
+        run: cd backend && npm test
+        env:
+          DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/campusplus_test?schema=public"
+          JWT_SECRET: "campusplus_ci_test_jwt_super_secret_key_2026"
+          NODE_ENV: "test"
+
       - name: Deploy to Render
+        if: github.ref == 'refs/heads/main' && env.RENDER_DEPLOY_HOOK_URL != ''
         run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-      - name: Run production migrations
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+      - name: Run Production Migrations
+        if: github.ref == 'refs/heads/main' && env.PRODUCTION_DATABASE_URL != ''
         run: cd backend && npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
