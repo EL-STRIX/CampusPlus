@@ -421,7 +421,9 @@ export default function ReportIssuePage() {
       }
     }
 
-    if (selectedLabType === 'OTHER_LAB' && !customLabType.trim()) {
+    if (!selectedLabType) {
+      newErrors.labType = 'Please select the type of laboratory.';
+    } else if (selectedLabType === 'OTHER_LAB' && !customLabType.trim()) {
       newErrors.customLabType = 'Please specify the lab type.';
     }
 
@@ -785,16 +787,20 @@ export default function ReportIssuePage() {
                     label="Type of Laboratory"
                     id="labType"
                     name="labType"
-                    placeholder="Select Type of Laboratory (Optional)"
+                    placeholder="Select Type of Laboratory"
                     options={LAB_TYPES}
                     value={selectedLabType}
                     onChange={(e) => {
                       const val = e.target.value;
                       setSelectedLabType(val);
+                      setDeviceType(''); // Lock & reset equipment dropdown when lab changes
+                      setCustomDeviceType('');
                       if (val !== 'OTHER_LAB') {
                         setCustomLabType('');
                       }
                     }}
+                    error={errors.labType}
+                    required
                   />
                 </div>
 
@@ -861,16 +867,29 @@ export default function ReportIssuePage() {
 
             {/* Section 4: Device & Equipment Details */}
             <div>
-              <h2 className="text-base font-headline font-bold text-on-surface mb-4">Equipment & Device Details</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-headline font-bold text-on-surface">
+                  Equipment & Device Details
+                </h2>
+                {!selectedLabType && (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                    🔒 Locked: Select Lab Type First
+                  </span>
+                )}
+              </div>
               <div className="flex flex-col gap-4">
                 <Select
                   label="Equipment / Device Type"
                   id="deviceType"
                   name="deviceType"
                   placeholder={
-                    selectedLabType
-                      ? `Select Equipment for ${selectedLabType}`
-                      : 'Select Equipment / Device Type'
+                    !selectedLabType
+                      ? '🔒 Select Type of Laboratory First (Locked)'
+                      : selectedLabType === 'OTHER_LAB'
+                      ? customLabType
+                        ? `Select Equipment for ${customLabType}`
+                        : 'Select Equipment / Device Type'
+                      : `Select Equipment for ${selectedLabType}`
                   }
                   options={availableDevices}
                   value={deviceType}
@@ -882,6 +901,14 @@ export default function ReportIssuePage() {
                     }
                   }}
                   error={errors.deviceType}
+                  disabled={!selectedLabType || (selectedLabType === 'OTHER_LAB' && !customLabType.trim())}
+                  helperText={
+                    !selectedLabType
+                      ? 'Please select the Laboratory Type in Section 2 above to unlock the relevant equipment list.'
+                      : selectedLabType === 'OTHER_LAB' && !customLabType.trim()
+                      ? 'Please specify your custom lab type above to unlock equipment options.'
+                      : null
+                  }
                   required
                 />
 
