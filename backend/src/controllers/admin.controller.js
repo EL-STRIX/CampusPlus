@@ -17,8 +17,8 @@ async function getReports(req, res, next) {
       deviceType,
       dateFrom,
       dateTo,
-      sortBy = 'reportCount',
-      sortOrder = 'desc',
+      sortBy = 'status_workflow',
+      sortOrder = 'asc',
       search,
     } = req.query;
 
@@ -122,10 +122,28 @@ async function getReports(req, res, next) {
       ];
     }
 
-    // Determine sorting
-    const validSortFields = ['reportCount', 'createdAt', 'status', 'updatedAt'];
-    const sortField = validSortFields.includes(sortBy) ? sortBy : 'reportCount';
-    const direction = sortOrder.toLowerCase() === 'asc' ? 'asc' : 'desc';
+    // Determine sorting (Default: open/new first -> in_progress -> resolved -> rejected, newest records first)
+    let orderByClause;
+    if (sortBy === 'status_workflow' || !sortBy || sortBy === 'default') {
+      orderByClause = [
+        { status: 'asc' },
+        { createdAt: 'desc' },
+      ];
+    } else if (sortBy === 'createdAt') {
+      const direction = sortOrder.toLowerCase() === 'asc' ? 'asc' : 'desc';
+      orderByClause = [{ createdAt: direction }];
+    } else if (sortBy === 'reportCount') {
+      const direction = sortOrder.toLowerCase() === 'asc' ? 'asc' : 'desc';
+      orderByClause = [{ reportCount: direction }, { createdAt: 'desc' }];
+    } else if (sortBy === 'status') {
+      const direction = sortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+      orderByClause = [{ status: direction }, { createdAt: 'desc' }];
+    } else {
+      const validSortFields = ['reportCount', 'createdAt', 'status', 'updatedAt'];
+      const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+      const direction = sortOrder.toLowerCase() === 'asc' ? 'asc' : 'desc';
+      orderByClause = [{ [sortField]: direction }, { createdAt: 'desc' }];
+    }
 
     const [totalReports, reports] = await Promise.all([
       prisma.report.count({ where }),
@@ -133,7 +151,7 @@ async function getReports(req, res, next) {
         where,
         skip,
         take: limitNum,
-        orderBy: { [sortField]: direction },
+        orderBy: orderByClause,
         include: {
           building: { select: { id: true, name: true } },
           room: { select: { id: true, name: true } },

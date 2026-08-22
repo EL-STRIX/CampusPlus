@@ -64,8 +64,8 @@ export default function AllReportsPage() {
   const deviceTypeParam = searchParams.get('deviceType') || '';
   const dateFromParam = searchParams.get('dateFrom') || '';
   const dateToParam = searchParams.get('dateTo') || '';
-  const sortByParam = searchParams.get('sortBy') || 'reportCount';
-  const sortOrderParam = searchParams.get('sortOrder') || 'desc';
+  const sortByParam = searchParams.get('sortBy') || 'status_workflow';
+  const sortOrderParam = searchParams.get('sortOrder') || 'asc';
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
 
   // Local Data State
@@ -244,10 +244,10 @@ export default function AllReportsPage() {
                 }}
                 className="w-full sm:w-auto appearance-none text-xs font-headline font-semibold pl-3.5 pr-8 py-2 rounded-xl border border-outline-variant/60 bg-surface-container-low text-on-surface hover:bg-surface-container-lowest focus:border-primary focus:outline-none transition-colors cursor-pointer"
               >
+                <option value="status_workflow_asc">Sort: Status Flow (New → In Progress → Solved → Rejected)</option>
+                <option value="createdAt_desc">Sort: All Newest First</option>
+                <option value="createdAt_asc">Sort: All Oldest First</option>
                 <option value="reportCount_desc">Sort: Priority (Most Reported)</option>
-                <option value="createdAt_desc">Sort: Newest First</option>
-                <option value="createdAt_asc">Sort: Oldest First</option>
-                <option value="status_asc">Sort: By Status</option>
               </select>
               <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
