@@ -227,7 +227,7 @@ async function getReportById(req, res, next) {
           },
         },
         statusHistory: {
-          orderBy: { changedAt: 'desc' },
+          orderBy: { changedAt: 'asc' },
           include: {
             admin: { select: { username: true } },
           },
@@ -264,7 +264,7 @@ async function getReportById(req, res, next) {
         id: h.id,
         status: h.status,
         changedAt: h.changedAt,
-        changedBy: h.admin.username,
+        changedBy: h.admin ? h.admin.username : 'Facilities Staff',
       })),
     };
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getReportById, updateReportStatus } from '../api/admin';
 import Badge from '../components/Badge';
@@ -51,6 +51,58 @@ export default function ReportDetailPage() {
   useEffect(() => {
     loadReport();
   }, [loadReport]);
+
+  // Calculate unified chronological timeline events (Oldest to Newest)
+  const timelineEvents = useMemo(() => {
+    if (!report) return [];
+
+    const events = [];
+
+    // 1. Initial Report Creation Event
+    events.push({
+      id: 'created',
+      title: 'Ticket Created & Filed',
+      subtitle: `Reported by Student ${report.reporters?.[0]?.studentCode || 'Reporter'}`,
+      timestamp: report.createdAt,
+      status: 'open',
+      type: 'creation',
+    });
+
+    // 2. Status Transition History Events
+    if (report.statusHistory && report.statusHistory.length > 0) {
+      report.statusHistory.forEach((hist, idx) => {
+        // Exclude duplicate initial 'open' log that occurs within 3 seconds of report creation
+        const isDuplicateInitial =
+          hist.status === 'open' &&
+          Math.abs(new Date(hist.changedAt) - new Date(report.createdAt)) < 3000;
+
+        if (!isDuplicateInitial) {
+          let title = 'Status Updated';
+          if (hist.status === 'in_progress') {
+            title = 'Moved to In Progress';
+          } else if (hist.status === 'resolved') {
+            title = 'Marked as Resolved';
+          } else if (hist.status === 'rejected') {
+            title = 'Report Rejected / Closed';
+          } else if (hist.status === 'open') {
+            title = 'Re-opened Ticket';
+          }
+
+          events.push({
+            id: hist.id || `hist-${idx}`,
+            title,
+            subtitle: `Updated by ${hist.changedBy || 'Facilities Staff'}`,
+            timestamp: hist.changedAt,
+            status: hist.status,
+            type: 'transition',
+          });
+        }
+      });
+    }
+
+    // Sort strictly chronological (Oldest at top -> Newest / Current status at bottom)
+    return events.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  }, [report]);
 
   const handleStatusChangeRequest = async (e) => {
     e.preventDefault();
@@ -182,6 +234,120 @@ export default function ReportDetailPage() {
           </button>
         </div>
       )}
+
+      {/* Visual Status Progress Stepper */}
+      <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-card">
+        <span className="text-[11px] font-headline font-bold uppercase tracking-wider text-on-surface-variant block mb-4">
+          Ticket Lifecycle Progress
+        </span>
+
+        {report.status === 'rejected' ? (
+          <div className="flex items-center gap-4 p-4 rounded-xl bg-red-50/80 border border-status-rejected/30">
+            <div className="w-10 h-10 rounded-full bg-status-rejected text-white flex items-center justify-center font-bold text-lg flex-shrink-0">
+              ✕
+            </div>
+            <div>
+              <span className="font-headline font-bold text-sm text-status-rejected block">
+                Report Rejected & Closed
+              </span>
+              <span className="text-xs font-sans text-on-surface-variant mt-0.5 block">
+                {report.rejectionReason || 'This ticket has been marked as rejected / unactionable.'}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative">
+            {/* Step 1: Open / Filed */}
+            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200">
+              <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-headline font-bold text-xs flex-shrink-0 shadow-sm">
+                ✓
+              </div>
+              <div className="min-w-0">
+                <span className="font-headline font-bold text-xs text-emerald-900 block truncate">
+                  1. Report Filed
+                </span>
+                <span className="text-[10px] font-sans text-emerald-700 block">
+                  Logged into system
+                </span>
+              </div>
+            </div>
+
+            {/* Step 2: In Progress / Under Repair */}
+            <div
+              className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all ${
+                report.status === 'in_progress'
+                  ? 'bg-amber-50 border-amber-300 ring-2 ring-amber-400/20 shadow-sm'
+                  : report.status === 'resolved'
+                  ? 'bg-emerald-50/80 border-emerald-200'
+                  : 'bg-surface-container-low border-outline-variant/30 opacity-60'
+              }`}
+            >
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-headline font-bold text-xs flex-shrink-0 ${
+                  report.status === 'resolved'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : report.status === 'in_progress'
+                    ? 'bg-amber-500 text-white animate-pulse shadow-sm'
+                    : 'bg-outline text-white'
+                }`}
+              >
+                {report.status === 'resolved' ? '✓' : '2'}
+              </div>
+              <div className="min-w-0">
+                <span
+                  className={`font-headline font-bold text-xs block truncate ${
+                    report.status === 'in_progress'
+                      ? 'text-amber-900 font-extrabold'
+                      : report.status === 'resolved'
+                      ? 'text-emerald-900'
+                      : 'text-on-surface-variant'
+                  }`}
+                >
+                  2. Under Repair
+                </span>
+                <span className="text-[10px] font-sans text-on-surface-variant block">
+                  {report.status === 'in_progress'
+                    ? 'Active maintenance'
+                    : report.status === 'resolved'
+                    ? 'Repair completed'
+                    : 'Awaiting technician'}
+                </span>
+              </div>
+            </div>
+
+            {/* Step 3: Resolved / Operational */}
+            <div
+              className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all ${
+                report.status === 'resolved'
+                  ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-400/20 shadow-sm'
+                  : 'bg-surface-container-low border-outline-variant/30 opacity-60'
+              }`}
+            >
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-headline font-bold text-xs flex-shrink-0 ${
+                  report.status === 'resolved'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'bg-outline text-white'
+                }`}
+              >
+                {report.status === 'resolved' ? '✓' : '3'}
+              </div>
+              <div className="min-w-0">
+                <span
+                  className={`font-headline font-bold text-xs block truncate ${
+                    report.status === 'resolved' ? 'text-emerald-900 font-extrabold' : 'text-on-surface-variant'
+                  }`}
+                >
+                  3. Resolved
+                </span>
+                <span className="text-[10px] font-sans text-on-surface-variant block">
+                  {report.status === 'resolved' ? 'Equipment operational' : 'Pending fix'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Top 2-Column Grid: Photo & Device Details */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
@@ -360,41 +526,40 @@ export default function ReportDetailPage() {
 
         {/* Status History Timeline */}
         <div className="lg:col-span-5">
-          <Card title="Status History Audit Log" subtitle="Tracked transitions by facilities staff">
+          <Card title="Status History Audit Log" subtitle="Tracked transitions in chronological order">
             <div className="relative border-l-2 border-outline-variant/40 ml-3 space-y-6 py-2">
-              {/* Initial Report Creation */}
-              <div className="relative pl-6">
-                <div className="absolute -left-[9px] top-1 w-4 h-4 bg-status-open rounded-full border-2 border-surface-container-lowest"></div>
-                <div className="flex flex-col">
-                  <span className="font-headline font-bold text-xs text-on-surface">
-                    Report Created
-                  </span>
-                  <span className="text-[11px] font-sans text-on-surface-variant mt-0.5">
-                    {new Date(report.createdAt).toLocaleDateString(undefined, {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
-                  <div className="mt-1">
-                    <Badge status="open" />
-                  </div>
-                </div>
-              </div>
+              {timelineEvents.map((evt, idx) => {
+                const isLatest = idx === timelineEvents.length - 1;
 
-              {/* Status History Rows */}
-              {report.statusHistory &&
-                report.statusHistory.map((hist) => (
-                  <div key={hist.id} className="relative pl-6">
-                    <div className="absolute -left-[9px] top-1 w-4 h-4 bg-primary rounded-full border-2 border-surface-container-lowest"></div>
+                return (
+                  <div key={evt.id} className="relative pl-6">
+                    {/* Timeline Node Dot */}
+                    <div
+                      className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-surface-container-lowest ${
+                        evt.status === 'resolved'
+                          ? 'bg-status-resolved'
+                          : evt.status === 'in_progress'
+                          ? 'bg-status-in-progress'
+                          : evt.status === 'rejected'
+                          ? 'bg-status-rejected'
+                          : 'bg-status-open'
+                      }`}
+                    ></div>
+
                     <div className="flex flex-col">
-                      <span className="font-headline font-bold text-xs text-on-surface">
-                        Status updated by {hist.changedBy}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-headline font-bold text-xs text-on-surface">
+                          {evt.title}
+                        </span>
+                        {isLatest && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-headline font-bold bg-primary/10 text-primary border border-primary/20 animate-pulse">
+                            Current
+                          </span>
+                        )}
+                      </div>
+
                       <span className="text-[11px] font-sans text-on-surface-variant mt-0.5">
-                        {new Date(hist.changedAt).toLocaleDateString(undefined, {
+                        {new Date(evt.timestamp).toLocaleDateString(undefined, {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',
@@ -402,12 +567,18 @@ export default function ReportDetailPage() {
                           minute: '2-digit',
                         })}
                       </span>
-                      <div className="mt-1">
-                        <Badge status={hist.status} />
+
+                      <span className="text-[11px] font-sans text-on-surface-variant/80 mt-0.5 italic">
+                        {evt.subtitle}
+                      </span>
+
+                      <div className="mt-2">
+                        <Badge status={evt.status} />
                       </div>
                     </div>
                   </div>
-                ))}
+                );
+              })}
             </div>
           </Card>
         </div>
