@@ -45,6 +45,8 @@ export default function ReportIssuePage() {
   const [studentCode, setStudentCode] = useState('');
   const [selectedDept, setSelectedDept] = useState('');
   const [selectedStream, setSelectedStream] = useState('');
+  const [customDepartment, setCustomDepartment] = useState('');
+  const [customStream, setCustomStream] = useState('');
   const [yearSemester, setYearSemester] = useState('');
   const [selectedBuilding, setSelectedBuilding] = useState('');
   const [selectedRoom, setSelectedRoom] = useState('');
@@ -147,12 +149,23 @@ export default function ReportIssuePage() {
     if (!studentCode.trim()) {
       newErrors.studentCode = 'Student code / Roll number is required.';
     }
-    if (!selectedDept) {
-      newErrors.department = 'Please select your department.';
+
+    if (selectedDept === 'OTHER') {
+      if (!customDepartment.trim()) {
+        newErrors.customDepartment = 'Please enter your department name.';
+      }
+      if (!customStream.trim()) {
+        newErrors.customStream = 'Please specify your stream / branch (or enter General).';
+      }
+    } else {
+      if (!selectedDept) {
+        newErrors.department = 'Please select your department.';
+      }
+      if (!selectedStream) {
+        newErrors.stream = 'Please select your stream / branch.';
+      }
     }
-    if (!selectedStream) {
-      newErrors.stream = 'Please select your stream / branch.';
-    }
+
     if (!selectedBuilding) {
       newErrors.building = 'Please select the building location.';
     }
@@ -185,11 +198,14 @@ export default function ReportIssuePage() {
     try {
       setSubmitting(true);
 
+      const finalDepartment = selectedDept === 'OTHER' ? customDepartment.trim() : selectedDept;
+      const finalStream = selectedDept === 'OTHER' ? customStream.trim() : selectedStream;
+
       const formData = new FormData();
       formData.append('photo', photoFile);
       formData.append('studentCode', studentCode.trim());
-      formData.append('department', selectedDept);
-      formData.append('stream', selectedStream);
+      formData.append('department', finalDepartment);
+      formData.append('stream', finalStream);
       if (yearSemester) formData.append('yearSemester', yearSemester);
       formData.append('buildingId', selectedBuilding);
       formData.append('roomId', selectedRoom);
@@ -389,7 +405,7 @@ export default function ReportIssuePage() {
                     label="Student Roll No / Code"
                     id="studentCode"
                     name="studentCode"
-                    placeholder="e.g. 22CSE045 or S102938"
+                    placeholder="e.g. BWU/BCA/24/330"
                     value={studentCode}
                     onChange={(e) => setStudentCode(e.target.value)}
                     helperText="Please enter your official student registration / roll code. Submissions are logged for maintenance accountability."
@@ -398,40 +414,76 @@ export default function ReportIssuePage() {
                   />
                 </div>
 
-                <Select
-                  label="Department"
-                  id="department"
-                  name="department"
-                  placeholder={loadingRefData ? 'Loading departments...' : 'Select Department'}
-                  options={departments.map((d) => ({ value: d.name, label: d.name }))}
-                  value={selectedDept}
-                  onChange={(e) => {
-                    setSelectedDept(e.target.value);
-                    setSelectedStream(''); // Reset stream when department changes
-                  }}
-                  error={errors.department}
-                  disabled={loadingRefData}
-                  required
-                />
+                <div className={selectedDept === 'OTHER' ? 'md:col-span-2' : ''}>
+                  <Select
+                    label="Department"
+                    id="department"
+                    name="department"
+                    placeholder={loadingRefData ? 'Loading departments...' : 'Select Department'}
+                    options={[
+                      ...departments.map((d) => ({ value: d.name, label: d.name })),
+                      { value: 'OTHER', label: 'Other (Enter Department Manually)' },
+                    ]}
+                    value={selectedDept}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSelectedDept(val);
+                      setSelectedStream(''); // Reset stream when department changes
+                      if (val !== 'OTHER') {
+                        setCustomDepartment('');
+                        setCustomStream('');
+                      }
+                    }}
+                    error={errors.department}
+                    disabled={loadingRefData}
+                    required
+                  />
+                </div>
 
-                <Select
-                  label="Stream / Branch"
-                  id="stream"
-                  name="stream"
-                  placeholder={
-                    !selectedDept
-                      ? 'Select Department First'
-                      : availableStreams.length === 0
-                      ? 'No streams available'
-                      : 'Select Stream'
-                  }
-                  options={availableStreams}
-                  value={selectedStream}
-                  onChange={(e) => setSelectedStream(e.target.value)}
-                  error={errors.stream}
-                  disabled={!selectedDept || availableStreams.length === 0}
-                  required
-                />
+                {selectedDept === 'OTHER' ? (
+                  <>
+                    <Input
+                      label="Specify Department Name"
+                      id="customDepartment"
+                      name="customDepartment"
+                      placeholder="e.g. Department of Pharmacy / Law / Management"
+                      value={customDepartment}
+                      onChange={(e) => setCustomDepartment(e.target.value)}
+                      error={errors.customDepartment}
+                      required
+                    />
+
+                    <Input
+                      label="Specify Stream / Branch"
+                      id="customStream"
+                      name="customStream"
+                      placeholder="e.g. B.Pharm / General / Specialized Core"
+                      value={customStream}
+                      onChange={(e) => setCustomStream(e.target.value)}
+                      error={errors.customStream}
+                      required
+                    />
+                  </>
+                ) : (
+                  <Select
+                    label="Stream / Branch"
+                    id="stream"
+                    name="stream"
+                    placeholder={
+                      !selectedDept
+                        ? 'Select Department First'
+                        : availableStreams.length === 0
+                        ? 'No streams available'
+                        : 'Select Stream'
+                    }
+                    options={availableStreams}
+                    value={selectedStream}
+                    onChange={(e) => setSelectedStream(e.target.value)}
+                    error={errors.stream}
+                    disabled={!selectedDept || availableStreams.length === 0}
+                    required
+                  />
+                )}
 
                 <div className="md:col-span-2">
                   <Select
