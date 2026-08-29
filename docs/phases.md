@@ -53,7 +53,6 @@
 4. Scaffold `student-app/` and `admin-app/` with Vite + React + Tailwind CSS per `TRD.md` §1.
 5. Set up ESLint + Prettier + Husky + lint-staged per `TRD.md` §3.1–3.2.
 6. Create `.env.example` files in all three folders per `TRD.md` §8.1–8.3.
-7. Create `docker-compose.yml` for local PostgreSQL per `TRD.md` §2.4.
 8. Write root `README.md` with setup instructions (link out to `TRD.md` §2 for full commands).
 9. Set up GitHub repo with branch protection on `main` (per `TRD.md` §3.2) and create `staging` branch.
 
@@ -61,7 +60,6 @@
 
 **Definition of Done:**
 - [ ] All three apps start locally without errors
-- [ ] Local Postgres container starts via `docker compose up -d db`
 - [ ] Lint runs clean on all three folders
 - [ ] `.env.example` files match `TRD.md` §8 exactly
 - [ ] Git repo has `main` + `staging` branches with protection rules

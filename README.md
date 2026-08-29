@@ -20,7 +20,7 @@
 - [Environment Configuration](#-environment-configuration)
 - [Local Development Setup](#-local-development-setup)
 - [Production Deployment Guide](#-production-deployment-guide)
-  - [1. Backend API Deployment](#1-backend-api-deployment-render--railway--vps--docker)
+  - [1. Backend API Deployment](#1-backend-api-deployment-render--railway--vps)
   - [2. Frontend SPAs Deployment](#2-frontend-spas-deployment-vercel--netlify--cloudflare)
   - [3. Production Nginx Reverse Proxy](#3-production-nginx-reverse-proxy-sample)
 - [REST API Reference](#-rest-api-reference)
@@ -209,7 +209,7 @@ npm run dev:admin
 
 ## 🚢 Production Deployment Guide
 
-### 1. Backend API Deployment (Render / Railway / VPS / Docker)
+### 1. Backend API Deployment (Render / Railway / VPS)
 
 #### Build & Start Commands:
 - **Build Command:** `npm install && npx prisma generate && npx prisma migrate deploy`
@@ -358,7 +358,7 @@ When the database is initialized using the seed script, the following default ad
 For in-depth architectural diagrams, database entity relationship schemas, API schemas, and deployment runbooks, consult the repository documentation:
 
 - [`docs/API.md`](docs/API.md) — **REST API Specification** & cURL Request/Response Manual
-- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — **Production Deployment Runbook** (Docker, Cloud, VPS, Nginx, PM2)
+- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — **Production Deployment Runbook** (Cloud, VPS, Nginx, PM2)
 - [`docs/PRD.md`](docs/PRD.md) — **Product Requirements Document** & User Stories
 - [`docs/TRD.md`](docs/TRD.md) — **Technical Requirements Document** & Validation Schemas
 - [`docs/architecture.md`](docs/architecture.md) — **System Architecture**, Security & Database ERD

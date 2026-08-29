@@ -58,7 +58,7 @@ This document is the **implementation-level source of truth**. Any technical dec
 ### 2.1 Prerequisites
 - Node.js 20.x installed (recommend via `nvm`)
 - npm 10.x (bundled)
-- Docker (for local PostgreSQL instance) — or a local Postgres 15 install
+- PostgreSQL 15 installed locally (e.g. via [postgres.app](https://www.postgresql.org/download/) or your OS package manager)
 - Git
 
 ### 2.2 Setup Commands (Backend)
@@ -66,7 +66,7 @@ This document is the **implementation-level source of truth**. Any technical dec
 cd backend
 npm install
 cp .env.example .env          # fill in local values
-docker compose up -d db        # starts local Postgres container
+# ensure local PostgreSQL 15 is running and a database named campusplus_dev exists
 npx prisma migrate dev         # applies schema migrations locally
 npm run seed:dev               # seeds dummy departments/buildings + a dev admin account
 npm run dev                    # starts backend on http://localhost:5000
@@ -80,23 +80,20 @@ cp .env.example .env
 npm run dev            # Vite dev server, default http://localhost:5173 (student-app), 5174 (admin-app)
 ```
 
-### 2.4 Local `docker-compose.yml` (backend/)
-```yaml
-version: "3.9"
-services:
-  db:
-    image: postgres:15
-    restart: always
-    environment:
-      POSTGRES_USER: campusplus
-      POSTGRES_PASSWORD: localdevpassword
-      POSTGRES_DB: campusplus_dev
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-volumes:
-  pgdata:
+### 2.4 Local Database Setup
+
+Install PostgreSQL 15 locally and create the development database:
+
+```bash
+# Create the development database (run once)
+psql -U postgres -c "CREATE USER campusplus WITH PASSWORD 'localdevpassword';"
+psql -U postgres -c "CREATE DATABASE campusplus_dev OWNER campusplus;"
+```
+
+Then update your `backend/.env` `DATABASE_URL` accordingly:
+
+```
+DATABASE_URL=postgresql://campusplus:localdevpassword@localhost:5432/campusplus_dev
 ```
 
 ---

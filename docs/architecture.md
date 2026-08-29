@@ -125,8 +125,7 @@ campusplus/
 │   │   └── server.js
 │   ├── uploads/                    # Persistent disk mount point (device photos)
 │   ├── .env.example
-│   ├── package.json
-│   └── Dockerfile
+│   └── package.json
 │
 ├── .github/
 │   └── workflows/
