@@ -168,18 +168,77 @@ VITE_API_BASE_URL=http://localhost:5000/api/v1
 ## 💻 Local Development Setup
 
 ### 1. Prerequisites
-- **Node.js**: `v18.x` or `v20.x` LTS
-- **PostgreSQL**: `v14+` or `v16+` (running locally or via cloud instance)
-- **npm**: `v9+` or `v10+`
+Before you begin, make sure the following are installed on your machine:
+- **Node.js** `v18.x` or `v20.x` LTS — [nodejs.org](https://nodejs.org/)
+- **npm** `v9+` or `v10+` (bundled with Node.js)
+- **PostgreSQL** `v15` — [postgresql.org/download](https://www.postgresql.org/download/)
+- **Git** — [git-scm.com](https://git-scm.com/)
 
-### 2. Install Dependencies
-Install all workspace dependencies from the project root:
+---
+
+### 2. Clone the Repository
+```bash
+git clone https://github.com/<your-org>/campusplus.git
+cd campusplus
+```
+
+---
+
+### 3. Install All Dependencies
+From the **project root**, install workspace dependencies for all three packages at once:
 ```bash
 npm install
 ```
 
-### 3. Setup Database Schema & Seed Data
-Navigate to the `backend` directory, run migrations, and seed initial records:
+---
+
+### 4. Create the PostgreSQL Database
+Open your PostgreSQL shell (e.g. `psql -U postgres`) and run:
+```sql
+CREATE USER campusplus WITH PASSWORD 'localdevpassword';
+CREATE DATABASE campusplus_dev OWNER campusplus;
+```
+
+---
+
+### 5. Configure Environment Variables
+
+**Backend** — copy the example and fill in values:
+```bash
+cd backend
+cp .env.example .env
+```
+Your `backend/.env` should look like:
+```env
+NODE_ENV=development
+PORT=5000
+DATABASE_URL=postgresql://campusplus:localdevpassword@localhost:5432/campusplus_dev
+JWT_SECRET=replace_with_a_strong_random_256_bit_secret
+JWT_EXPIRY=8h
+UPLOAD_DIR=./uploads
+MAX_UPLOAD_SIZE_MB=5
+RATE_LIMIT_WINDOW_MINUTES=60
+RATE_LIMIT_MAX_REQUESTS=10
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174
+SENTRY_DSN=
+```
+
+**Student App:**
+```bash
+cd ../student-app
+cp .env.example .env
+```
+
+**Admin App:**
+```bash
+cd ../admin-app
+cp .env.example .env
+cd ..
+```
+
+---
+
+### 6. Run Database Migrations & Seed Data
 ```bash
 cd backend
 npx prisma migrate deploy
@@ -187,19 +246,22 @@ node prisma/seedReports.js
 cd ..
 ```
 
-### 4. Start Development Servers
-Run the backend and frontends in separate terminal windows or concurrently:
+---
+
+### 7. Start the Development Servers
+Open **three separate terminals** and run each command:
 
 ```bash
-# Terminal 1: Backend API (Port 5000)
+# Terminal 1 — Backend API (http://localhost:5000)
 npm run dev:backend
 
-# Terminal 2: Student Portal (Port 5173)
+# Terminal 2 — Student Portal (http://localhost:5173)
 npm run dev:student
 
-# Terminal 3: Admin Console (Port 5174)
+# Terminal 3 — Admin Console (http://localhost:5174)
 npm run dev:admin
 ```
+
 
 - **Student Portal:** `http://localhost:5173`
 - **Admin Console:** `http://localhost:5174`
