@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDepartments, submitFaultReport } from '../api/reports';
 import Button from '../components/Button';
 import { Input, Select, Textarea } from '../components/FormField';
+import CameraCapture from '../components/CameraCapture';
 
 // Base facility & electrical hardware common across all campus labs and classrooms
 const COMMON_LAB_FACILITIES = [
@@ -441,7 +442,6 @@ const YEAR_SEMESTER_OPTIONS = [
 
 export default function ReportIssuePage() {
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
 
   // Reference Data State
   const [departments, setDepartments] = useState([]);
@@ -462,7 +462,7 @@ export default function ReportIssuePage() {
   const [numberNotVisible, setNumberNotVisible] = useState(false);
   const [additionalNotes, setAdditionalNotes] = useState('');
 
-  // Photo Upload State
+  // Photo Upload State (Camera Only)
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
 
@@ -503,7 +503,7 @@ export default function ReportIssuePage() {
     return getDevicesForDepartmentAndStream(deptToUse, streamToUse);
   }, [selectedDept, selectedStream, customDepartment, customStream]);
 
-  // Photo selection handler
+  // Photo selection handler (called on camera capture)
   const handlePhotoSelect = (file) => {
     if (!file) return;
 
@@ -512,7 +512,7 @@ export default function ReportIssuePage() {
     if (!validMimes.includes(file.type)) {
       setErrors((prev) => ({
         ...prev,
-        photo: 'Invalid file type. Only JPG, PNG, and WebP images are supported.',
+        photo: 'Invalid image format. Only camera-captured JPG, PNG, and WebP images are supported.',
       }));
       return;
     }
@@ -521,7 +521,7 @@ export default function ReportIssuePage() {
     if (file.size > 5 * 1024 * 1024) {
       setErrors((prev) => ({
         ...prev,
-        photo: 'Photo size exceeds the 5MB limit. Please upload a smaller image.',
+        photo: 'Photo size exceeds the 5MB limit. Please retake the photo.',
       }));
       return;
     }
@@ -541,9 +541,6 @@ export default function ReportIssuePage() {
       URL.revokeObjectURL(photoPreview);
       setPhotoPreview(null);
     }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
   // Client-side validation
@@ -551,7 +548,7 @@ export default function ReportIssuePage() {
     const newErrors = {};
 
     if (!photoFile) {
-      newErrors.photo = 'A clear photo of the malfunctioning equipment is required.';
+      newErrors.photo = 'A live camera photo of the malfunctioning equipment is required.';
     }
     if (!studentCode.trim()) {
       newErrors.studentCode = 'Student code / Roll number is required.';
@@ -678,7 +675,7 @@ export default function ReportIssuePage() {
             <ul className="flex flex-col gap-3 text-xs font-sans text-on-surface-variant">
               <li className="flex items-start gap-2.5">
                 <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-bold">1</span>
-                <span>A clear photo of the broken equipment or error screen</span>
+                <span>A live photo of the broken equipment (captured directly via device camera)</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-bold">2</span>
@@ -698,7 +695,7 @@ export default function ReportIssuePage() {
                 Zero-Login Integrity Notice
               </span>
               <p className="text-[11px] font-sans text-on-surface-variant leading-relaxed">
-                Login is omitted for student convenience. Please enter your authentic student ID. All submissions are logged for campus maintenance accountability.
+                Login is omitted for student convenience. Real-time camera evidence verifies the authentic physical state of equipment.
               </p>
             </div>
           </div>
@@ -719,97 +716,14 @@ export default function ReportIssuePage() {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-            {/* Section 1: Photo Upload */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-headline font-semibold text-on-surface flex items-center justify-between">
-                <span>
-                  Evidence Photo <span className="text-error">*</span>
-                </span>
-                <span className="text-xs text-outline font-normal">Supports JPG, PNG, WebP (Max 5MB)</span>
-              </label>
-
-              {!photoPreview ? (
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    if (e.dataTransfer.files?.[0]) {
-                      handlePhotoSelect(e.dataTransfer.files[0]);
-                    }
-                  }}
-                  className={`w-full h-48 border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group ${
-                    errors.photo
-                      ? 'border-error bg-red-50/50'
-                      : 'border-outline-variant hover:border-primary hover:bg-surface-container-low bg-surface'
-                  }`}
-                >
-                  <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <span className="text-sm font-headline font-semibold text-on-surface group-hover:text-primary transition-colors">
-                    Click to browse or drag & drop photo here
-                  </span>
-                  <span className="text-xs text-outline mt-1">Take a clear picture of the equipment fault</span>
-                </div>
-              ) : (
-                <div className="relative rounded-xl overflow-hidden border border-outline-variant/50 bg-surface-container-low p-4 flex items-center gap-4">
-                  <img
-                    src={photoPreview}
-                    alt="Fault evidence preview"
-                    className="w-24 h-24 object-cover rounded-lg border border-outline-variant/40 shadow-sm"
-                  />
-                  <div className="flex-grow min-w-0">
-                    <span className="text-sm font-headline font-bold text-on-surface truncate block">
-                      {photoFile?.name}
-                    </span>
-                    <span className="text-xs text-on-surface-variant block mt-0.5">
-                      {(photoFile?.size / (1024 * 1024)).toFixed(2)} MB
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-xs text-status-resolved font-medium mt-1">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      Photo ready for upload
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleRemovePhoto}
-                    className="px-3 py-1.5 rounded-lg border border-error/40 text-error hover:bg-error/10 text-xs font-headline font-semibold transition-colors flex items-center gap-1"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Remove
-                  </button>
-                </div>
-              )}
-
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files?.[0]) {
-                    handlePhotoSelect(e.target.files[0]);
-                  }
-                }}
-              />
-
-              {errors.photo && (
-                <span className="text-xs text-error font-medium flex items-center gap-1 mt-1">
-                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                  {errors.photo}
-                </span>
-              )}
-            </div>
+            {/* Section 1: Live Camera Evidence Photo */}
+            <CameraCapture
+              photoFile={photoFile}
+              photoPreview={photoPreview}
+              onPhotoCaptured={handlePhotoSelect}
+              onPhotoRemoved={handleRemovePhoto}
+              error={errors.photo}
+            />
 
             <hr className="border-outline-variant/30" />
 
