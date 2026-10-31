@@ -37,3 +37,8 @@ pino-*.log
 .idea/
 .DS_Store
 Thumbs.db
+
+# Documentation
+docs/
+Doc/
+
